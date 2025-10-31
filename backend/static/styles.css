@@ -132,19 +132,20 @@ body {
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 .brand.brand-with-slogan {
   flex-direction: column;
   align-items: flex-start;
+  gap: 2px;
 }
 .brand-logo {
-  height: 36px;
+  height: 28px;
   width: auto;
   display: block;
 }
 .brand-tagline {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--muted);
   line-height: 1.2;
 }
