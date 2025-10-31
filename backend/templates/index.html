@@ -11,8 +11,37 @@
       <div class="brand">Matr ERP</div>
       <div class="user">matrix</div>
     </header>
-    
 
+    {% set logged_in = request.cookies.get('session_user') %}
+    {% if logged_in %}
+    <div class="layout">
+      <aside class="sidebar">
+        <h3 class="section-title">Navigation</h3>
+        <div class="nav">
+          <a href="/app/sales">Sales</a>
+          <a href="/app/purchases">Purchases</a>
+          <a href="/app/accounting">Accounting</a>
+          <a href="/app/inventory">Inventory</a>
+          <a href="/app/banking">Banking</a>
+          <a href="/app/production">Production</a>
+          <a href="/app/mrp">MRP</a>
+          <a href="/app/employees">Employees</a>
+          <a href="/app/time">Time</a>
+          <a href="/app/settings">Settings</a>
+        </div>
+      </aside>
+      <main class="content">
+        <div class="apps-grid">
+          {% for a in apps %}
+          <a href="/app/{{ a.slug }}" class="app-tile" style="--tile-color: {{ a.color }}">
+            <div class="app-icon">{{ a.icon }}</div>
+            <div class="app-name">{{ a.name }}</div>
+          </a>
+          {% endfor %}
+        </div>
+      </main>
+    </div>
+    {% else %}
     <main class="content">
       <div class="apps-grid">
         {% for a in apps %}
@@ -23,6 +52,7 @@
         {% endfor %}
       </div>
     </main>
+    {% endif %}
 
     <footer class="footer">Matr ERP • Minimal Odoo-like Prototype</footer>
   </body>
