@@ -27,7 +27,7 @@ def load_company() -> dict:
     """Load company settings; create defaults if missing."""
     if not COMPANY_FILE.exists():
         COMPANY_FILE.write_text(json.dumps({
-            "name": "Matr ERP Demo Co",
+    "name": "Matrix ERP Demo Co",
             "vat_number": "310000000000000",
             "country_code": "SA",
         }, ensure_ascii=False, indent=2), encoding="utf-8")

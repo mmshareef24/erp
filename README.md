@@ -1,4 +1,4 @@
-Matr ERP (Odoo-like Minimal Prototype)
+Matrix ERP (Odoo-like Minimal Prototype)
 
 Overview
 - A lightweight, modular FastAPI application that mimics Odoo’s app launcher.

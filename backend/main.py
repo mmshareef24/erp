@@ -22,7 +22,7 @@ from .modules.banking import router as banking_router
 from .db import init_db
 
 
-app = FastAPI(title="Matr ERP")
+app = FastAPI(title="Matrix ERP")
 
 # Basic CORS for future frontend integrations
 app.add_middleware(
