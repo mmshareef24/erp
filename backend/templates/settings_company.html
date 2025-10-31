@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings • Company</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/settings">Settings</a> / Company</nav>
+    </header>
+
+    <main class="content">
+      <form class="form" action="/settings/company" method="post">
+        <div class="card">
+          <h2>Organization Settings</h2>
+          <p class="muted">Configure company information used for invoices and ZATCA QR.</p>
+          <div class="form-grid">
+            <label>Company Name
+              <input type="text" name="name" value="{{ company.name }}" required />
+            </label>
+            <label>VAT Number
+              <input type="text" name="vat_number" value="{{ company.vat_number }}" required />
+            </label>
+            <label>Country Code
+              <input type="text" name="country_code" value="{{ company.country_code }}" maxlength="2" />
+            </label>
+          </div>
+          <div class="actions">
+            <a class="btn" href="/app/settings">Cancel</a>
+            <button class="btn btn-primary" type="submit">Save</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Planning Defaults</h2>
+          <p class="muted">Configure default lead times used by MRP planning.</p>
+          <div class="form-grid">
+            <label>MRP Make Lead Time (days)
+              <input type="number" min="0" name="mrp_make_lead_days" value="{{ company.mrp_make_lead_days }}" required />
+            </label>
+            <label>MRP Buy Lead Time (days)
+              <input type="number" min="0" name="mrp_buy_lead_days" value="{{ company.mrp_buy_lead_days }}" required />
+            </label>
+          </div>
+          <div class="actions">
+            <a class="btn" href="/app/settings">Cancel</a>
+            <button class="btn btn-primary" type="submit">Save</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>ZATCA Notes</h3>
+          <ul>
+            <li>Phase 1 QR encodes seller name and VAT number.</li>
+            <li>Ensure VAT number matches your registered Tax Number.</li>
+            <li>Future Phase 2 fields (EGS ID, device serial) can be added later.</li>
+          </ul>
+        </div>
+      </form>
+    </main>
+
+    <footer class="footer">Settings • Company</footer>
+  </body>
+</html>

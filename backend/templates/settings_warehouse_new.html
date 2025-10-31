@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings • New Warehouse</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/settings">Settings</a> / <a href="/settings/warehouses">Warehouses</a> / New</nav>
+    </header>
+
+    <main class="content">
+      <form class="form" action="/settings/warehouses" method="post">
+        <div class="card">
+          <h2>New Warehouse</h2>
+          <div class="form-grid">
+            <label>Name
+              <input type="text" name="name" required />
+            </label>
+          </div>
+          <div class="actions">
+            <a class="btn" href="/settings/warehouses">Cancel</a>
+            <button class="btn btn-primary" type="submit">Save</button>
+          </div>
+        </div>
+      </form>
+    </main>
+
+    <footer class="footer">Settings • New Warehouse</footer>
+  </body>
+</html>

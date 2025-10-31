@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sales • Delivery Note</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/sales">Sales</a> / Delivery Note</nav>
+    </header>
+
+    <main class="content">
+      <section class="card">
+        <h2>Delivery {{ delivery.id }}</h2>
+        <p class="muted">Date: {{ delivery.date }} • Status: {{ delivery.status }}</p>
+        <p><strong>Customer:</strong> {{ delivery.customer }}</p>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Qty</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in delivery.items %}
+            <tr>
+              <td>{{ item.product }}</td>
+              <td>{{ item.quantity }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+    </main>
+
+    <footer class="footer">Sales • Delivery Note</footer>
+  </body>
+  </html>

@@ -1,0 +1,25 @@
+{% extends "app.html" %}
+{% block title %}Profit & Loss{% endblock %}
+{% block content %}
+<div class="layout-with-sidebar">
+  <aside class="sidebar">
+    <nav class="submodule-nav">
+      <a href="/accounting/coa">Chart of Accounts</a>
+      <a href="/accounting/journals">Journals</a>
+      <a href="/accounting/trial-balance">Trial Balance</a>
+      <a class="active" href="/accounting/pl">Profit &amp; Loss</a>
+      <a href="/accounting/balance-sheet">Balance Sheet</a>
+    </nav>
+  </aside>
+  <section>
+    <h2>Profit &amp; Loss</h2>
+    <table class="table">
+      <tbody>
+        <tr><td>Income</td><td style="text-align:right;">{{ '%.2f'|format(pl.income or 0) }}</td></tr>
+        <tr><td>Expense</td><td style="text-align:right;">{{ '%.2f'|format(pl.expense or 0) }}</td></tr>
+        <tr><td><strong>Net Income</strong></td><td style="text-align:right;"><strong>{{ '%.2f'|format(pl.net_income or 0) }}</strong></td></tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+{% endblock %}

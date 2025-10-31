@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory • Moves</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/inventory">Inventory</a> / Moves</nav>
+    </header>
+
+    <main class="content">
+      <div class="actions">
+        <a class="btn" href="/inventory/items">Items</a>
+        <a class="btn" href="/inventory/receive">Receive</a>
+        <a class="btn" href="/inventory/issue">Issue</a>
+        <span class="divider"></span>
+        <a class="btn" href="/production/work_orders">Production Work Orders</a>
+        <span class="divider"></span>
+        <form action="/inventory/moves" method="get" style="display:inline-flex; gap:8px; align-items:center">
+          <label>Type
+            <select name="type">
+              <option value="">(All)</option>
+              <option value="in" {% if selected_type=='in' %}selected{% endif %}>In</option>
+              <option value="out" {% if selected_type=='out' %}selected{% endif %}>Out</option>
+            </select>
+          </label>
+          <label>Warehouse
+            <select name="warehouse">
+              <option value="">(All)</option>
+              <option value="Main" {% if selected_warehouse=='Main' %}selected{% endif %}>Main</option>
+              {% for w in warehouses %}
+              <option value="{{ w.name }}" {% if selected_warehouse==w.name %}selected{% endif %}>{{ w.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>Location
+            <select name="location">
+              <option value="">(All)</option>
+              {% for l in locations %}
+              <option value="{{ l.name }}" {% if selected_location==l.name %}selected{% endif %}>{{ l.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>Start
+            <input type="date" name="start_date" value="{{ selected_start_date }}" />
+          </label>
+          <label>End
+            <input type="date" name="end_date" value="{{ selected_end_date }}" />
+          </label>
+          <label>Memo contains
+            <input type="text" name="memo" value="{{ selected_memo }}" placeholder="text in memo" />
+          </label>
+          <label>Per Page
+            <select name="per_page">
+              {% set opts = [10,25,50,100] %}
+              {% for n in opts %}
+              <option value="{{ n }}" {% if per_page==n %}selected{% endif %}>{{ n }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <input type="hidden" name="sort" value="{{ selected_sort }}" />
+          <input type="hidden" name="order" value="{{ selected_order }}" />
+          {% if selected_ref %}
+          <input type="hidden" name="ref" value="{{ selected_ref }}" />
+          {% endif %}
+          <button class="btn" type="submit">Filter</button>
+        </form>
+        <a class="btn" href="/inventory/moves?format=csv{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_warehouse %}&warehouse={{ selected_warehouse }}{% endif %}{% if selected_location %}&location={{ selected_location }}{% endif %}{% if selected_ref %}&ref={{ selected_ref }}{% endif %}{% if selected_start_date %}&start_date={{ selected_start_date }}{% endif %}{% if selected_end_date %}&end_date={{ selected_end_date }}{% endif %}{% if selected_memo %}&memo={{ selected_memo }}{% endif %}">Export CSV</a>
+        <a class="btn" href="/inventory/moves?format=json{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_warehouse %}&warehouse={{ selected_warehouse }}{% endif %}{% if selected_location %}&location={{ selected_location }}{% endif %}{% if selected_ref %}&ref={{ selected_ref }}{% endif %}{% if selected_start_date %}&start_date={{ selected_start_date }}{% endif %}{% if selected_end_date %}&end_date={{ selected_end_date }}{% endif %}{% if selected_memo %}&memo={{ selected_memo }}{% endif %}">Export JSON</a>
+        <a class="btn" href="/inventory/moves?format=print{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_warehouse %}&warehouse={{ selected_warehouse }}{% endif %}{% if selected_location %}&location={{ selected_location }}{% endif %}{% if selected_ref %}&ref={{ selected_ref }}{% endif %}{% if selected_start_date %}&start_date={{ selected_start_date }}{% endif %}{% if selected_end_date %}&end_date={{ selected_end_date }}{% endif %}{% if selected_memo %}&memo={{ selected_memo }}{% endif %}">Printable View</a>
+        {% if selected_ref %}
+        <span class="chip">Filtered by Ref: {{ selected_ref }}</span>
+        <a class="btn" href="/inventory/moves">Clear</a>
+        {% if selected_ref[:3] == 'WO-' %}
+        <a class="btn" href="/production/work_orders/{{ selected_ref[3:] }}">Back to Work Order</a>
+        <a class="btn" href="/inventory/moves?ref={{ selected_ref }}&type=out{% if selected_warehouse %}&warehouse={{ selected_warehouse }}{% endif %}{% if selected_location %}&location={{ selected_location }}{% endif %}{% if selected_start_date %}&start_date={{ selected_start_date }}{% endif %}{% if selected_end_date %}&end_date={{ selected_end_date }}{% endif %}">Materials Issued</a>
+        {% endif %}
+        {% endif %}
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>
+              {% set next_order = 'asc' %}
+              {% if selected_sort=='date' and selected_order!='desc' %}{% set next_order = 'desc' %}{% endif %}
+              <a href="/inventory/moves?sort=date&order={{ next_order }}&page={{ page }}&per_page={{ per_page }}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_warehouse %}&warehouse={{ selected_warehouse }}{% endif %}{% if selected_location %}&location={{ selected_location }}{% endif %}{% if selected_ref %}&ref={{ selected_ref }}{% endif %}{% if selected_start_date %}&start_date={{ selected_start_date }}{% endif %}{% if selected_end_date %}&end_date={{ selected_end_date }}{% endif %}">Date</a>
+            </th>
+            <th>
+              {% set next_order = 'asc' %}
+              {% if selected_sort=='type' and selected_order!='desc' %}{% set next_order = 'desc' %}{% endif %}
+              <a href="/inventory/moves?sort=type&order={{ next_order }}&page={{ page }}&per_page={{ per_page }}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_warehouse %}&warehouse={{ selected_warehouse }}{% endif %}{% if selected_location %}&location={{ selected_location }}{% endif %}{% if selected_ref %}&ref={{ selected_ref }}{% endif %}{% if selected_start_date %}&start_date={{ selected_start_date }}{% endif %}{% if selected_end_date %}&end_date={{ selected_end_date }}{% endif %}">Type</a>
+            </th>
+            <th>
+              {% set next_order = 'asc' %}
+              {% if selected_sort=='product' and selected_order!='desc' %}{% set next_order = 'desc' %}{% endif %}
+              <a href="/inventory/moves?sort=product&order={{ next_order }}&page={{ page }}&per_page={{ per_page }}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_warehouse %}&warehouse={{ selected_warehouse }}{% endif %}{% if selected_location %}&location={{ selected_location }}{% endif %}{% if selected_ref %}&ref={{ selected_ref }}{% endif %}{% if selected_start_date %}&start_date={{ selected_start_date }}{% endif %}{% if selected_end_date %}&end_date={{ selected_end_date }}{% endif %}">Product</a>
+            </th>
+            <th>Qty</th>
+            <th>Unit Cost</th>
+            <th>Ref</th>
+            <th>Memo</th>
+            <th>Warehouse</th>
+            <th>Location</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in moves %}
+          <tr>
+            <td>{{ m.date }}</td>
+            <td>{{ m.type }}</td>
+            <td>{{ m.product }}</td>
+            <td>{{ m.quantity }}</td>
+            <td>${{ '%.2f'|format(m.unit_cost) }}</td>
+            <td>
+              {% if m.ref and m.ref[:3] == 'WO-' %}
+              <a href="/production/work_orders/{{ m.ref[3:] }}">{{ m.ref }}</a>
+              {% elif m.ref and m.ref[:4] == 'DEL-' %}
+              <a href="/sales/deliveries/{{ m.ref[4:] }}">{{ m.ref }}</a>
+              {% elif m.ref and m.ref[:5] == 'BILL-' %}
+              <a href="/purchases/bills/{{ m.ref[5:] }}">{{ m.ref }}</a>
+              {% elif m.ref and m.ref[:5] == 'XFER-' %}
+              <a href="/inventory/transfers/{{ m.ref[5:] }}">{{ m.ref }}</a>
+              {% else %}
+              {{ m.ref }}
+              {% endif %}
+            </td>
+            <td>{{ m.memo }}</td>
+            <td>{{ m.warehouse }}</td>
+            <td>{{ m.location }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="muted">No movements yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="actions" style="justify-content: space-between; align-items: center; margin-top: 8px;">
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <span class="chip">Page {{ page }} of {{ total_pages }} • {{ total_count }} total</span>
+          <span class="chip">Totals • In: {{ '%.2f'|format(totals.qty_in) }} ( ${{ '%.2f'|format(totals.val_in) }} ) • Out: {{ '%.2f'|format(totals.qty_out) }} ( ${{ '%.2f'|format(totals.val_out) }} ) • Net: {{ '%.2f'|format(totals.qty_net) }} ( ${{ '%.2f'|format(totals.val_net) }} )</span>
+        </div>
+        <div style="display:inline-flex; gap:8px;">
+          {% if page > 1 %}
+            <a class="btn" href="/inventory/moves?page={{ page - 1 }}&per_page={{ per_page }}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_warehouse %}&warehouse={{ selected_warehouse }}{% endif %}{% if selected_location %}&location={{ selected_location }}{% endif %}{% if selected_ref %}&ref={{ selected_ref }}{% endif %}{% if selected_start_date %}&start_date={{ selected_start_date }}{% endif %}{% if selected_end_date %}&end_date={{ selected_end_date }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}{% if selected_order %}&order={{ selected_order }}{% endif %}">Prev</a>
+          {% endif %}
+          {% if page < total_pages %}
+            <a class="btn" href="/inventory/moves?page={{ page + 1 }}&per_page={{ per_page }}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_warehouse %}&warehouse={{ selected_warehouse }}{% endif %}{% if selected_location %}&location={{ selected_location }}{% endif %}{% if selected_ref %}&ref={{ selected_ref }}{% endif %}{% if selected_start_date %}&start_date={{ selected_start_date }}{% endif %}{% if selected_end_date %}&end_date={{ selected_end_date }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}{% if selected_order %}&order={{ selected_order }}{% endif %}">Next</a>
+          {% endif %}
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">Inventory • Moves</footer>
+  </body>
+</html>

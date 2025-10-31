@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Products • Matr ERP</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / Products</nav>
+    </header>
+
+    <main class="content">
+      <div class="toolbar">
+        <h1>Products</h1>
+        <div>
+          <a href="/catalogs/products/new" class="btn btn-primary">New Product</a>
+        </div>
+      </div>
+
+      {% if products %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in products %}
+          <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.name }}</td>
+            <td>{{ '%.2f' | format(p.price) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="muted">No products yet. Create your first one.</p>
+      {% endif %}
+    </main>
+
+    <footer class="footer">Matr ERP • Products</footer>
+  </body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Banking • Accounts</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/accounting">Accounting</a> / Banking • Accounts</nav>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <h3 class="section-title">Banking</h3>
+        <div class="nav">
+          <a href="/banking/accounts">Accounts</a>
+          <a href="/banking/transactions">Transactions</a>
+          <a href="/banking/reconcile">Reconcile</a>
+        </div>
+      </aside>
+      <main class="content">
+        <div class="actions">
+          <a class="btn btn-primary" href="/banking/accounts/new">New Bank Account</a>
+          <a class="btn" href="/banking/transactions">Transactions</a>
+          <a class="btn" href="/banking/reconcile">Reconcile</a>
+        </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Number</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in accounts %}
+          <tr>
+            <td>{{ a.id }}</td>
+            <td>{{ a.name }}</td>
+            <td>{{ a.number or '-' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="muted">No bank accounts yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </main>
+    </div>
+
+    <footer class="footer">Banking • Accounts</footer>
+  </body>
+</html>

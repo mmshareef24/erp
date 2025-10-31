@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Production • New Work Order</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/production">Production</a> / <a href="/production/work_orders">Work Orders</a> / New</nav>
+    </header>
+
+    <main class="content">
+      <form class="form" action="/production/work_orders" method="post">
+        <div class="card">
+          <h2>New Work Order</h2>
+          <div class="form-grid">
+            <label>Product
+              <select name="product" required>
+                {% if products %}
+                  {% for p in products %}
+                  <option value="{{ p.name }}">{{ p.name }}</option>
+                  {% endfor %}
+                {% else %}
+                  <option value="">-- Enter manually below --</option>
+                {% endif %}
+              </select>
+            </label>
+            {% if not products %}
+            <label>Product (manual)
+              <input type="text" name="product" />
+            </label>
+            {% endif %}
+            <label>Quantity
+              <input type="number" name="quantity" step="0.01" min="0" required />
+            </label>
+            <label>Warehouse
+              <select name="warehouse">
+                <option value="Main">Main</option>
+                {% for w in warehouses %}
+                <option value="{{ w.name }}">{{ w.name }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>Location
+              <select name="location">
+                <option value="">(None)</option>
+                {% for l in locations %}
+                <option value="{{ l.name }}">{{ l.name }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>Labor Cost
+              <input type="number" name="labor_cost" step="0.01" min="0" value="0.00" />
+            </label>
+            <label>Overhead Cost
+              <input type="number" name="overhead_cost" step="0.01" min="0" value="0.00" />
+            </label>
+            <label>Issue Method
+              <select name="issue_method">
+                <option value="manual">Manual Issue</option>
+                <option value="backflush">Backflush at Completion</option>
+              </select>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px">Reserve Components
+              <input type="checkbox" name="reserve_components" value="true" />
+            </label>
+          </div>
+          <div class="form-grid">
+            <label>Operations (one per line: name, minutes, rate)
+              <textarea name="operations_text" rows="5" placeholder="Assembly, 30, 0.50\nTesting, 15, 0.40"></textarea>
+            </label>
+          </div>
+          <div class="actions">
+            <a class="btn" href="/production/work_orders">Cancel</a>
+            <button class="btn btn-primary" type="submit">Save</button>
+          </div>
+        </div>
+      </form>
+    </main>
+
+    <footer class="footer">Production • New Work Order</footer>
+  </body>
+</html>

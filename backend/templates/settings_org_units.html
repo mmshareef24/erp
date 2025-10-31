@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Organization Units • Settings • Matr ERP</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/apps/settings">Settings</a> / Org Units</nav>
+    </header>
+
+    <main class="content">
+      <section class="content-header">
+        <h1>Organization Units</h1>
+        <div class="actions">
+          <a class="btn btn-primary" href="/settings/org-units/new">New Unit</a>
+        </div>
+      </section>
+
+      <section>
+        {% if org_units %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Parent Unit</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in org_units %}
+            <tr>
+              <td>{{ u.id }}</td>
+              <td>{{ u.name }}</td>
+              <td>
+                {% set parent = (org_units | selectattr('id', 'equalto', u.parent_id) | list) %}
+                {% if parent and parent[0] %}{{ parent[0].name }}{% else %}-{% endif %}
+              </td>
+              <td>
+                <a class="btn" href="/settings/org-units/{{ u.id }}/edit">Edit</a>
+                <a class="btn btn-danger" href="/settings/org-units/{{ u.id }}/delete">Delete</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="muted">No organization units defined yet. Create your first one.</p>
+        {% endif %}
+      </section>
+    </main>
+
+    <footer class="footer">Settings • Organization</footer>
+  </body>
+  </html>

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "LV-2025-0001",
+    "emp_id": "E001",
+    "type": "annual",
+    "type_name": "Annual",
+    "start": "2025-11-01",
+    "end": "2025-11-30",
+    "days": 30,
+    "status": "approved",
+    "reason": "",
+    "policy_max_days": 30,
+    "policy_paid": "full",
+    "policy_note": "21 days; 30 after 5 years of service",
+    "exceeds_policy": false
+  }
+]

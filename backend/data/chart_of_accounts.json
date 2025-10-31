@@ -1,0 +1,32 @@
+[
+  {
+    "code": "1000",
+    "name": "Cash",
+    "type": "asset"
+  },
+  {
+    "code": "1010",
+    "name": "Bank",
+    "type": "asset"
+  },
+  {
+    "code": "1100",
+    "name": "Accounts Receivable",
+    "type": "asset"
+  },
+  {
+    "code": "2100",
+    "name": "VAT Payable",
+    "type": "liability"
+  },
+  {
+    "code": "4000",
+    "name": "Sales Revenue",
+    "type": "income"
+  },
+  {
+    "code": "5000",
+    "name": "Cost of Goods Sold",
+    "type": "expense"
+  }
+]

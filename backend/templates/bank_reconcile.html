@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Banking • Reconcile</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/banking/accounts">Banking</a> / Reconcile</nav>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <h3 class="section-title">Banking</h3>
+        <div class="nav">
+          <a href="/banking/accounts">Accounts</a>
+          <a href="/banking/transactions">Transactions</a>
+          <a href="/banking/reconcile">Reconcile</a>
+        </div>
+      </aside>
+      <main class="content">
+        <div class="actions">
+          <a class="btn" href="/banking/transactions">Transactions</a>
+          <a class="btn btn-primary" href="/banking/reconcile">Reconcile</a>
+        </div>
+        <form class="form" action="/banking/reconcile" method="get" style="margin-bottom: 1rem;">
+          <label>Account
+            <select name="account_id">
+              <option value="">All</option>
+              {% for a in accounts %}
+              <option value="{{ a.id }}" {% if selected_account==a.id %}selected{% endif %}>{{ a.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <button class="btn" type="submit">Filter</button>
+        </form>
+      <section class="card">
+        <h2>Bank Transactions</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Account</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Memo</th>
+              <th>Reconcile</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in transactions %}
+            <tr>
+              <td>{{ t.date }}</td>
+              <td>{{ accounts_map.get(t.account_id) or t.account_id }}</td>
+              <td>{{ t.type }}</td>
+              <td>${{ '%.2f'|format(t.amount) }}</td>
+              <td>{{ t.memo or '-' }}</td>
+              <td>
+                {% if not t.reconciled_ref %}
+                <form action="/banking/reconcile" method="post" class="form-inline">
+                  <input type="hidden" name="tx_id" value="{{ t.id }}" />
+                  <select name="ref_type">
+                    <option value="sales">Sales</option>
+                    <option value="purchase">Purchase</option>
+                  </select>
+                  <select name="ref_id">
+                    {% set matched = false %}
+                    {% for p in sales_payments %}
+                      {% if p.bank_account_id == t.account_id %}
+                        {% set matched = true %}
+                        <option value="{{ p.id }}">Sales {{ p.id[:8] }} • {{ p.customer }} • ${{ '%.2f'|format(p.amount) }} • INV {{ p.invoice_id[:8] }}</option>
+                      {% endif %}
+                    {% endfor %}
+                    {% for p in purchase_payments %}
+                      {% if p.bank_account_id == t.account_id %}
+                        {% set matched = true %}
+                        <option value="{{ p.id }}">Purch {{ p.id[:8] }} • {{ p.vendor }} • ${{ '%.2f'|format(p.amount) }} • BILL {{ p.bill_id[:8] }}</option>
+                      {% endif %}
+                    {% endfor %}
+                    {% if not matched %}
+                      <option disabled>No matching bank-account payments</option>
+                    {% endif %}
+                  </select>
+                  <button class="btn" type="submit">Reconcile</button>
+                </form>
+                {% else %}
+                  <span class="label success">Reconciled</span>
+                  {% if t.reconciled_ref %}
+                  <div class="muted">
+                    →
+                    {% if t.reconciled_ref.type == 'sales' %}
+                      <a href="/sales/payments/{{ t.reconciled_ref.id }}">Sales {{ t.reconciled_ref.id[:8] }}</a>
+                    {% elif t.reconciled_ref.type == 'purchase' %}
+                      <a href="/purchases/payments/{{ t.reconciled_ref.id }}">Purchase {{ t.reconciled_ref.id[:8] }}</a>
+                    {% else %}
+                      {{ t.reconciled_ref.type|capitalize }} {{ t.reconciled_ref.id[:8] }}
+                    {% endif %}
+                    on {{ t.reconciled_ref.date }}
+                  </div>
+                  {% endif %}
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="muted">No bank transactions.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+      </main>
+    </div>
+
+    <footer class="footer">Banking • Reconcile</footer>
+  </body>
+</html>

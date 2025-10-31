@@ -1,0 +1,19 @@
+[
+  {
+    "id": "b344c392-ee02-41b9-b3c1-d069e9cd35b7",
+    "order_id": "e214eaef-8b58-4af5-ad15-918378083a7a",
+    "vendor": "ACME",
+    "date": "2025-10-30T20:44:42Z",
+    "items": [
+      {
+        "product": "Widget A",
+        "quantity": 10.0,
+        "unit_cost": 5.0
+      }
+    ],
+    "status": "open",
+    "subtotal": 50.0,
+    "tax_rate": 0.1,
+    "total": 55.0
+  }
+]

@@ -1,0 +1,39 @@
+{% extends "app.html" %}
+{% block title %}Account Ledger{% endblock %}
+{% block content %}
+<div class="layout-with-sidebar">
+  <aside class="sidebar">
+    <nav class="submodule-nav">
+      <a href="/accounting/coa">Chart of Accounts</a>
+      <a href="/accounting/journals">Journals</a>
+      <a href="/accounting/trial-balance">Trial Balance</a>
+      <a href="/accounting/pl">Profit &amp; Loss</a>
+      <a href="/accounting/balance-sheet">Balance Sheet</a>
+    </nav>
+  </aside>
+  <section>
+    <h2>Ledger - {{ account.code }} {{ account.name }}</h2>
+    {% if ledger and ledger|length > 0 %}
+    <table class="table">
+      <thead>
+        <tr><th>Date</th><th>Ref</th><th>Memo</th><th>Debit</th><th>Credit</th><th>Balance</th></tr>
+      </thead>
+      <tbody>
+        {% for r in ledger %}
+        <tr>
+          <td>{{ r.date }}</td>
+          <td>{{ r.ref }}</td>
+          <td>{{ r.entry_memo }} {% if r.line_memo %} - {{ r.line_memo }}{% endif %}</td>
+          <td style="text-align:right;">{{ '%.2f'|format(r.debit or 0) }}</td>
+          <td style="text-align:right;">{{ '%.2f'|format(r.credit or 0) }}</td>
+          <td style="text-align:right;">{{ '%.2f'|format(r.balance or 0) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No ledger entries for this account.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

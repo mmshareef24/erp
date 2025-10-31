@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Production • BOMs</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/production">Production</a> / BOMs</nav>
+    </header>
+
+    <main class="content">
+      <div class="actions">
+        <a class="btn" href="/production/work_orders">Work Orders</a>
+        <a class="btn btn-primary" href="/production/boms/new">New BOM</a>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Components</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in boms %}
+          <tr>
+            <td>{{ b.product }}</td>
+            <td>
+              {% for c in b.components %}
+                {{ c.product }} × {{ c.quantity }}{% if not loop.last %}, {% endif %}
+              {% endfor %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="2" class="muted">No BOMs yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </main>
+
+    <footer class="footer">Production • BOMs</footer>
+  </body>
+</html>

@@ -1,0 +1,129 @@
+:root {
+  --bg: #f3f4f6;
+  --text: #111827;
+  --muted: #6b7280;
+  --card: #ffffff;
+  --border: #e5e7eb;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 60%);
+  color: var(--text);
+}
+
+.topbar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: #ffffffc8;
+  backdrop-filter: saturate(180%) blur(7px);
+  border-bottom: 1px solid var(--border);
+}
+.brand { font-weight: 700; letter-spacing: 0.2px; }
+.user { color: var(--muted); }
+
+.notice {
+  margin: 16px auto;
+  max-width: 980px;
+  background: #fff7ed;
+  color: #7c2d12;
+  border: 1px solid #fdba74;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.notice a { color: #c2410c; text-decoration: none; }
+.notice a:hover { text-decoration: underline; }
+
+.content { max-width: 980px; margin: 10px auto 40px; padding: 0 10px; }
+.layout { max-width: 980px; margin: 10px auto 40px; padding: 0 10px; display: grid; grid-template-columns: 220px 1fr; gap: 16px; }
+.layout .content { max-width: none; margin: 0; padding: 0; }
+.sidebar { background: #ffffff; border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+.sidebar .section-title { margin: 0 0 8px; font-size: 14px; color: #374151; }
+.sidebar .nav { display: flex; flex-direction: column; gap: 6px; }
+.sidebar .nav a { display: block; padding: 8px 10px; border-radius: 8px; color: #111827; text-decoration: none; }
+.sidebar .nav a:hover { background: #f3f4f6; }
+.sidebar .divider { height: 1px; background: var(--border); margin: 8px 0; }
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 18px;
+}
+
+.app-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+.app-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(16, 24, 40, 0.08);
+  border-color: #d1d5db;
+}
+.app-icon {
+  width: 64px; height: 64px; border-radius: 12px;
+  display: grid; place-items: center;
+  background: var(--tile-color, #d1fae5);
+  font-size: 28px;
+}
+.app-name { font-size: 14px; color: #374151; }
+
+.app-header {
+  display: flex; align-items: center; gap: 14px;
+  background: #ffffff; border: 1px solid var(--border);
+  padding: 16px; border-radius: 10px;
+}
+.app-header .app-icon { font-size: 32px; }
+.app-title { margin: 0; font-size: 20px; }
+.app-desc { margin: 6px 0 0; color: var(--muted); }
+
+.coming-soon {
+  margin-top: 18px;
+  background: #f9fafb; border: 1px dashed #d1d5db; padding: 16px; border-radius: 10px;
+}
+
+.footer {
+  margin: 24px auto; max-width: 980px; color: var(--muted); font-size: 12px; text-align: center;
+}
+
+.btn {
+  display: inline-block;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: #111827;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn:hover { border-color: #d1d5db; }
+.btn-primary { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+.btn-primary:hover { background: #4338ca; border-color: #4338ca; }
+
+.table {
+  width: 100%; border-collapse: collapse; background: #ffffff; border: 1px solid var(--border);
+}
+.table th, .table td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+.table thead th { background: #f9fafb; font-weight: 600; }
+.muted { color: var(--muted); }
+
+.card { background: #ffffff; border: 1px solid var(--border); padding: 16px; border-radius: 10px; }
+.toolbar { margin-bottom: 12px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.form-grid input, .form-grid select { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; }
+.actions { margin-top: 12px; display: flex; gap: 10px; }

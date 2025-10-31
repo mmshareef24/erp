@@ -1,0 +1,28 @@
+[
+  {
+    "date": "2025-10-30T20:44:42Z",
+    "ref": "BILL-b344c392-ee02-41b9-b3c1-d069e9cd35b7",
+    "memo": "Bill b344c392-ee02-41b9-b3c1-d069e9cd35b7 from ACME",
+    "lines": [
+      {
+        "account_code": "5000",
+        "debit": 50.0,
+        "credit": 0.0,
+        "memo": "Purchase expense"
+      },
+      {
+        "account_code": "2100",
+        "debit": 5.0,
+        "credit": 0.0,
+        "memo": "VAT payable offset"
+      },
+      {
+        "account_code": "2000",
+        "debit": 0.0,
+        "credit": 55.0,
+        "memo": "AP ACME"
+      }
+    ],
+    "posted_at": "2025-10-30T20:44:42.012083"
+  }
+]

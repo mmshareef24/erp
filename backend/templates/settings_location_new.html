@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings • New Location</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/settings">Settings</a> / <a href="/settings/locations">Locations</a> / New</nav>
+    </header>
+
+    <main class="content">
+      <form class="form" action="/settings/locations" method="post">
+        <div class="card">
+          <h2>New Location</h2>
+          <div class="form-grid">
+            <label>Name
+              <input type="text" name="name" required />
+            </label>
+            <label>Warehouse
+              <select name="warehouse">
+                <option value="">(None)</option>
+                {% for w in warehouses %}
+                <option value="{{ w.name }}">{{ w.name }}</option>
+                {% endfor %}
+              </select>
+            </label>
+          </div>
+          <div class="actions">
+            <a class="btn" href="/settings/locations">Cancel</a>
+            <button class="btn btn-primary" type="submit">Save</button>
+          </div>
+        </div>
+      </form>
+    </main>
+
+    <footer class="footer">Settings • New Location</footer>
+  </body>
+</html>

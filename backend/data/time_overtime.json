@@ -1,0 +1,10 @@
+[
+  {
+    "id": "OT-2025-0001",
+    "emp_id": "E001",
+    "date": "2025-10-31",
+    "hours": 5.0,
+    "status": "approved",
+    "reason": "Office Work"
+  }
+]

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accounting • AR Aging</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/accounting">Accounting</a> / AR Aging</nav>
+    </header>
+
+    <main class="content">
+      <div class="toolbar">
+        <h1>AR Aging</h1>
+      </div>
+      {% if aging %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Current</th>
+            <th>31-60</th>
+            <th>61-90</th>
+            <th>> 90</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cust, b in aging.items() %}
+          <tr>
+            <td>{{ cust }}</td>
+            <td>${{ '%.2f'|format(b.current) }}</td>
+            <td>${{ '%.2f'|format(b['30']) }}</td>
+            <td>${{ '%.2f'|format(b['60']) }}</td>
+            <td>${{ '%.2f'|format(b['120']) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="muted">No open invoices to age.</p>
+      {% endif %}
+    </main>
+
+    <footer class="footer">Accounting • AR Aging</footer>
+  </body>
+</html>

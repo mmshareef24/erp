@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Banking • New Account</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/banking/accounts">Banking</a> / New Account</nav>
+    </header>
+
+    <main class="content">
+      <section class="card">
+        <h2>New Bank Account</h2>
+        <form class="form-grid" action="/banking/accounts" method="post">
+          <label>Name
+            <input type="text" name="name" required />
+          </label>
+          <label>Number
+            <input type="text" name="number" />
+          </label>
+          <div class="actions">
+            <a class="btn" href="/banking/accounts">Cancel</a>
+            <button class="btn btn-primary" type="submit">Create</button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer">Banking • New Account</footer>
+  </body>
+</html>

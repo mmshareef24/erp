@@ -1,0 +1,8 @@
+[
+  {
+    "name": "General",
+    "start": "09:00",
+    "end": "18:00",
+    "days": ["Mon", "Tue", "Wed", "Thu", "Fri"]
+  }
+]

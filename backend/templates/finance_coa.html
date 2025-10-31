@@ -1,0 +1,39 @@
+{% extends "app.html" %}
+{% block title %}Chart of Accounts{% endblock %}
+{% block content %}
+<div class="layout-with-sidebar">
+  <aside class="sidebar">
+    <nav class="submodule-nav">
+      <a class="active" href="/accounting/coa">Chart of Accounts</a>
+      <a href="/accounting/journals">Journals</a>
+      <a href="/accounting/trial-balance">Trial Balance</a>
+      <a href="/accounting/pl">Profit &amp; Loss</a>
+      <a href="/accounting/balance-sheet">Balance Sheet</a>
+    </nav>
+  </aside>
+  <section>
+    <h2>Chart of Accounts</h2>
+    <p><a class="btn btn-primary" href="/accounting/coa/new">New Account</a></p>
+    <table class="table">
+      <thead>
+        <tr><th>Code</th><th>Name</th><th>Type</th><th>Ledger</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for a in chart %}
+        <tr>
+          <td>{{ a.code }}</td>
+          <td>{{ a.name }}</td>
+          <td>{{ a.type }}</td>
+          <td><a href="/accounting/ledger/{{ a.code }}">View Ledger</a></td>
+          <td>
+            <a href="/accounting/coa/{{ a.code }}/edit">Edit</a>
+            <span class="divider">|</span>
+            <a href="/accounting/coa/{{ a.code }}/delete">Delete</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+{% endblock %}

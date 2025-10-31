@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>New Shift</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>New Shift</h1>
+    <form method="post" action="/time/shifts" class="form">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" name="name" value="General" required />
+      </div>
+      <div class="form-group">
+        <label>Start Time</label>
+        <input type="time" name="start_time" value="09:00" required />
+      </div>
+      <div class="form-group">
+        <label>End Time</label>
+        <input type="time" name="end_time" value="18:00" required />
+      </div>
+      <div class="form-group">
+        <label>Days (comma separated)</label>
+        <input type="text" name="days" value="Mon,Tue,Wed,Thu,Fri" />
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn">Create</button>
+        <a class="btn btn-secondary" href="/time/shifts">Cancel</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

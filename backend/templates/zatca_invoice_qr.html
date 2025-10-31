@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZATCA • Invoice QR</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <style>
+      .qrwrap { display:flex; gap:16px; align-items:center; }
+      .qrbox { border:1px solid #ddd; padding:12px; border-radius:8px; }
+      canvas { width:200px; height:200px; }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/sales">Sales</a> / <a href="/sales/invoices">Invoices</a> / ZATCA QR</nav>
+    </header>
+    <main class="content">
+      <section class="card">
+        <h2>ZATCA QR • Invoice {{ invoice.id[:8] }}</h2>
+        <div class="qrwrap">
+          <div class="qrbox"><canvas id="qr"></canvas></div>
+          <div>
+            <p><strong>Customer:</strong> {{ invoice.customer }}</p>
+            <p class="muted">Date: {{ invoice.date }} • Total: ${{ '%.2f'|format(invoice.total) }}</p>
+            <div id="meta" class="muted"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      (async function(){
+        try {
+          const res = await fetch(`/zatca/invoices/{{ invoice.id }}/qr`);
+          const data = await res.json();
+          const payload = data.payload || '';
+          const el = document.getElementById('qr');
+          if (payload && el) {
+            QRCode.toCanvas(el, payload, { width: 200, margin: 1 }, (err) => {
+              if (err) console.error(err);
+            });
+          }
+          const meta = document.getElementById('meta');
+          if (meta) {
+            meta.textContent = `Seller: ${data.seller_name || '-'} • VAT: ${data.vat_number || '-'} • VAT Total: ${Number(data.vat_total||0).toFixed(2)}`;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      })();
+    </script>
+    <footer class="footer">ZATCA • Invoice QR</footer>
+  </body>
+</html>

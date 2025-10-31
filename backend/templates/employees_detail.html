@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employees • {{ emp.name }}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/employees">Employees</a> / {{ emp.name }}</nav>
+    </header>
+
+    <main class="content">
+      <div class="card">
+        <h2>{{ emp.name }} <span class="muted">(#{{ emp.emp_id }})</span></h2>
+        <div class="form-grid">
+          <label>Nationality
+            <input type="text" disabled value="{{ emp.nationality }}" />
+          </label>
+          <label>Hire Date
+            <input type="text" disabled value="{{ emp.hire_date }}" />
+          </label>
+          <label>Base Salary (monthly)
+            <input type="text" disabled value="{{ '%.2f'|format(emp.base_salary or 0) }}" />
+          </label>
+          <label>HRA (25% of Basic)
+            <input type="text" disabled value="{{ '%.2f'|format((emp.hra if emp.hra is not none else (emp.base_salary or 0) * 0.25) or 0) }}" />
+          </label>
+          <label>Transport (10% of Basic)
+            <input type="text" disabled value="{{ '%.2f'|format((emp.transport if emp.transport is not none else (emp.base_salary or 0) * 0.10) or 0) }}" />
+          </label>
+          <label>Total Monthly Compensation
+            <input type="text" disabled value="{{ '%.2f'|format((emp.base_salary or 0) + (emp.hra if emp.hra is not none else (emp.base_salary or 0) * 0.25) + (emp.transport if emp.transport is not none else (emp.base_salary or 0) * 0.10)) }}" />
+          </label>
+          <label>Contract Type
+            <input type="text" disabled value="{{ emp.contract_type }}" />
+          </label>
+          <label>Monthly-paid
+            <input type="text" disabled value="{{ 'Yes' if emp.monthly_paid else 'No' }}" />
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Identity Documents</h3>
+        <div class="form-grid">
+          <label>Iqama Number
+            <input type="text" disabled value="{{ emp.iqama_number or '' }}" />
+          </label>
+          <label>Iqama Expiry
+            <input type="text" disabled value="{{ emp.iqama_expiry or '' }}" />
+          </label>
+          {% if iqama_alert.status == 'expired' %}
+          <p class="alert alert-error">Iqama expired {{ (iqama_alert.days | abs) }} day(s) ago.</p>
+          {% elif iqama_alert.status == 'soon' %}
+          <p class="alert">Iqama expires in {{ iqama_alert.days }} day(s).</p>
+          {% endif %}
+          <label>Passport Number
+            <input type="text" disabled value="{{ emp.passport_number or '' }}" />
+          </label>
+          <label>Passport Expiry
+            <input type="text" disabled value="{{ emp.passport_expiry or '' }}" />
+          </label>
+          {% if passport_alert.status == 'expired' %}
+          <p class="alert alert-error">Passport expired {{ (passport_alert.days | abs) }} day(s) ago.</p>
+          {% elif passport_alert.status == 'soon' %}
+          <p class="alert">Passport expires in {{ passport_alert.days }} day(s).</p>
+          {% endif %}
+        </div>
+        <form class="form" action="/employees/{{ emp.emp_id }}/identity" method="post">
+          <div class="form-grid">
+            <label>Iqama Number
+              <input type="text" name="iqama_number" value="{{ emp.iqama_number or '' }}" />
+            </label>
+            <label>Iqama Expiry
+              <input type="date" name="iqama_expiry" value="{{ emp.iqama_expiry or '' }}" />
+            </label>
+            <label>Passport Number
+              <input type="text" name="passport_number" value="{{ emp.passport_number or '' }}" />
+            </label>
+            <label>Passport Expiry
+              <input type="date" name="passport_expiry" value="{{ emp.passport_expiry or '' }}" />
+            </label>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Update Identity</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>Organization &amp; Position</h3>
+        <div class="form-grid">
+          <label>Org Unit
+            {% set current_unit = (org_units | selectattr('id', 'equalto', emp.org_unit_id) | list) %}
+            <input type="text" disabled value="{% if current_unit and current_unit[0] %}{{ current_unit[0].name }}{% else %}-{% endif %}" />
+          </label>
+          <label>Position
+            {% set current_pos = (positions | selectattr('id', 'equalto', emp.position_id) | list) %}
+            <input type="text" disabled value="{% if current_pos and current_pos[0] %}{{ current_pos[0].title }}{% else %}-{% endif %}" />
+          </label>
+        </div>
+        <form class="form" action="/employees/{{ emp.emp_id }}/assign_position" method="post">
+          <div class="form-grid">
+            <label>Assign Org Unit
+              <select name="org_unit_id">
+                <option value="">(none)</option>
+                {% for u in org_units %}
+                <option value="{{ u.id }}" {% if emp.org_unit_id == u.id %}selected{% endif %}>{{ u.name }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>Assign Position
+              <select name="position_id">
+                <option value="">(none)</option>
+                {% for p in positions %}
+                <option value="{{ p.id }}" {% if emp.position_id == p.id %}selected{% endif %}>
+                  {{ p.title }}{% if p.org_unit_id %} — in {{ (org_units | selectattr('id', 'equalto', p.org_unit_id) | map(attribute='name') | list | first) or '' }}{% endif %}
+                </option>
+                {% endfor %}
+              </select>
+            </label>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Assign</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>Labour Law Summary (KSA)</h3>
+        <ul>
+          <li>Years of Service: <strong>{{ summary.years_of_service }}</strong></li>
+          <li>Annual Leave Entitlement: <strong>{{ summary.annual_leave_days }}</strong> days</li>
+          <li>Overtime Hourly Rate (base): <strong>{{ '%.2f'|format(summary.overtime_hour_rate) }}</strong></li>
+          <li>Notice Period: <strong>{{ summary.notice_period_days }}</strong> days</li>
+          <li>Max Weekly Hours: <strong>{{ summary.max_weekly_hours }}</strong> (Ramadan: <strong>{{ summary.max_weekly_hours_ramadan }}</strong>)</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>End of Service Benefit</h3>
+        <form class="form" action="/employees/{{ emp.emp_id }}/eos" method="post">
+          <div class="form-grid">
+            <label>Separation Date
+              <input type="date" name="separation_date" required />
+            </label>
+            <label>Reason
+              <select name="reason">
+                <option value="termination">Termination</option>
+                <option value="resignation">Resignation</option>
+              </select>
+            </label>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Compute</button>
+          </div>
+        </form>
+        {% if request.query_params.get('eos') %}
+        <p class="notice">EOS Benefit: <strong>{{ request.query_params.get('eos') }}</strong> (Reason: {{ request.query_params.get('reason') }}, Separation: {{ request.query_params.get('sep') }})</p>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <h3>Overtime Calculator</h3>
+        <form class="form" action="/employees/{{ emp.emp_id }}/overtime" method="post">
+          <div class="form-grid">
+            <label>Hours
+              <input type="number" step="0.01" min="0" name="hours" required />
+            </label>
+            <label>Day Type
+              <select name="day_type">
+                <option value="normal">Normal</option>
+                <option value="holiday">Official Holiday / Rest Day</option>
+              </select>
+            </label>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Compute</button>
+          </div>
+        </form>
+        {% if request.query_params.get('otpay') %}
+        <p class="notice">Overtime Pay: <strong>{{ request.query_params.get('otpay') }}</strong> ({{ request.query_params.get('hours') }}h, {{ request.query_params.get('day_type') }})</p>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <h3>Notes</h3>
+        <ul>
+          <li>These calculators are simplified and intended for guidance.</li>
+          <li>Confirm applicability with your HR policy and latest KSA regulations.</li>
+        </ul>
+      </div>
+    </main>
+
+    <footer class="footer">Employees • Detail</footer>
+  </body>
+</html>

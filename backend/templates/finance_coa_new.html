@@ -1,0 +1,52 @@
+{% extends "app.html" %}
+{% block title %}New GL Account{% endblock %}
+{% block content %}
+<h2>New GL Account</h2>
+<form method="post" action="/accounting/coa" class="form-grid">
+  {% if error %}
+  <div class="error" style="color:#b00; margin-bottom:8px;">{{ error }}</div>
+  {% endif %}
+  <label>
+    Code
+    <input type="text" name="code" required placeholder="e.g. 1200" />
+  </label>
+  <label>
+    Name
+    <input type="text" name="name" required placeholder="e.g. Accounts Receivable - EU" />
+  </label>
+  <label>
+    Type
+    <select name="type" required>
+      {% for t in types %}
+      <option value="{{ t }}">{{ t|capitalize }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <fieldset style="margin-top:12px;">
+    <legend>Opening Balance (optional)</legend>
+    <div class="form-grid">
+      <label>
+        Amount
+        <input type="number" name="opening_balance_amount" step="0.01" min="0" placeholder="0.00" />
+      </label>
+      <label>
+        Side
+        <select name="opening_balance_side">
+          <option value="">--</option>
+          <option value="debit">Debit</option>
+          <option value="credit">Credit</option>
+        </select>
+      </label>
+      <label>
+        As of Date
+        <input type="date" name="opening_balance_date" />
+      </label>
+    </div>
+    <p class="muted">If amount is provided, a balanced journal will be posted against Equity.</p>
+  </fieldset>
+  <div class="actions">
+    <button class="btn btn-primary" type="submit">Create</button>
+    <a class="btn" href="/accounting/coa">Cancel</a>
+  </div>
+</form>
+{% endblock %}

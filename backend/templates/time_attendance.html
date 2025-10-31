@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Attendance</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Attendance</h1>
+    <form method="post" action="/time/attendance/checkin" class="form-inline">
+      <select name="emp_id" required>
+        <option value="">Select Employee</option>
+        {% for emp in employees %}
+          <option value="{{ emp.emp_id }}">{{ emp.emp_id }} - {{ emp.name }}</option>
+        {% endfor %}
+      </select>
+      <input type="time" name="when" />
+      <input type="text" name="shift" placeholder="Shift (optional)" />
+      <button type="submit" class="btn">Check In</button>
+    </form>
+
+    <form method="post" action="/time/attendance/checkout" class="form-inline mt-1">
+      <select name="emp_id" required>
+        <option value="">Select Employee</option>
+        {% for emp in employees %}
+          <option value="{{ emp.emp_id }}">{{ emp.emp_id }} - {{ emp.name }}</option>
+        {% endfor %}
+      </select>
+      <input type="time" name="when" />
+      <button type="submit" class="btn">Check Out</button>
+    </form>
+
+    <h2 class="mt-2">Recent Entries</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Employee</th>
+          <th>In</th>
+          <th>Out</th>
+          <th>Hours</th>
+          <th>Shift</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for e in entries %}
+        <tr>
+          <td>{{ e.date }}</td>
+          <td>{{ e.emp_id }}</td>
+          <td>{{ e.in }}</td>
+          <td>{{ e.out or '-' }}</td>
+          <td>{{ '%.2f'|format(e.hours or 0) }}</td>
+          <td>{{ e.shift or '-' }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6">No attendance records yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="mt-2"><a href="/app/time">← Back to Time</a></p>
+  </div>
+</body>
+</html>

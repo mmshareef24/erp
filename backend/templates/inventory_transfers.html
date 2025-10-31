@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory • Transfers</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/inventory">Inventory</a> / Transfers</nav>
+    </header>
+
+    <main class="content">
+      <div class="actions">
+        <a class="btn" href="/inventory/items">Items</a>
+        <a class="btn" href="/inventory/moves">Moves</a>
+        <a class="btn btn-primary" href="/inventory/transfers/new">New Transfer</a>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Unit Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in transfers %}
+          <tr>
+            <td>{{ t.date }}</td>
+            <td>{{ t.product }}</td>
+            <td>{{ t.quantity }}</td>
+            <td>{{ t.from_warehouse }} / {{ t.from_location }}</td>
+            <td>{{ t.to_warehouse }} / {{ t.to_location }}</td>
+            <td>${{ '%.2f'|format(t.unit_cost) }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="muted">No transfers yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </main>
+
+    <footer class="footer">Inventory • Transfers</footer>
+  </body>
+</html>

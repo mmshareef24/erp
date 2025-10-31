@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sales • Invoice</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/sales">Sales</a> / <a href="/sales/invoices">Invoices</a> / {{ invoice.id[:8] }}</nav>
+    </header>
+
+    <main class="content">
+      <section class="card">
+        <h2>Invoice {{ invoice.id }}</h2>
+        <p class="muted">Date: {{ invoice.date }} • Status: {{ invoice.status }}</p>
+        <p><strong>Customer:</strong> {{ invoice.customer }}</p>
+        {% if customer %}
+        <p class="muted">Country: {{ customer.country_code or '-' }} • VAT rate: {{ '%.2f' | format(customer.vat_rate or 0.0) }}</p>
+        <p class="muted">AR Account: {{ customer.ar_account or 'AR' }}</p>
+        {% endif %}
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Unit Price</th>
+              <th>Line Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in invoice.items %}
+            <tr>
+              <td>{{ item.product }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>${{ '%.2f'|format(item.unit_price) }}</td>
+              <td>${{ '%.2f'|format(item.quantity * item.unit_price) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" style="text-align:right">Subtotal</td>
+              <td>${{ '%.2f'|format(invoice.subtotal) }}</td>
+            </tr>
+            <tr>
+              <td colspan="3" style="text-align:right">VAT ({{ '%.0f'|format(invoice.tax_rate * 100) }}%)</td>
+              <td>${{ '%.2f'|format(invoice.subtotal * invoice.tax_rate) }}</td>
+            </tr>
+            <tr>
+              <td colspan="3" style="text-align:right"><strong>Total</strong></td>
+              <td><strong>${{ '%.2f'|format(invoice.total) }}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+        {% if invoice.status != 'paid' %}
+        <form class="form-grid" action="/sales/invoices/{{ invoice.id }}/pay" method="post">
+          <label>
+            Method
+            <select name="method">
+              <option value="cash">Cash</option>
+              <option value="bank">Bank Transfer</option>
+              <option value="card">Card</option>
+            </select>
+          </label>
+          <label>
+            Bank Account (if bank)
+            <select name="bank_account_id">
+              <option value="">Select account</option>
+              {% for a in accounts %}
+              <option value="{{ a.id }}">{{ a.name }} ({{ a.number }})</option>
+              {% endfor %}
+            </select>
+          </label>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Record Payment</button>
+          </div>
+        </form>
+        {% else %}
+        <div class="actions"><span class="btn">Paid</span></div>
+        {% endif %}
+        <div class="actions" style="margin-top:12px">
+          <a class="btn" href="/zatca/invoices/{{ invoice.id }}">ZATCA QR</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">Sales • Invoice</footer>
+  </body>
+  </html>

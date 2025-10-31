@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sales • Invoices</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/sales">Sales</a> / Invoices</nav>
+    </header>
+
+    <main class="content">
+      <div class="layout-with-sidebar">
+        <aside class="sidebar">
+          <nav class="submodule-nav">
+            <a href="/sales/orders">Orders</a>
+            <a href="/sales/quotes">Quotes</a>
+            <a class="active" href="/sales/invoices">Invoices</a>
+          </nav>
+        </aside>
+        <section>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for i in invoices %}
+              <tr>
+                <td><a href="/sales/invoices/{{ i.id }}">{{ i.id[:8] }}</a></td>
+                <td>{{ i.customer }}</td>
+                <td>{{ i.date }}</td>
+                <td>{{ i.status }}</td>
+                <td>${{ '%.2f'|format(i.total) }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5" class="muted">No invoices yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">Sales • Invoices</footer>
+  </body>
+  </html>

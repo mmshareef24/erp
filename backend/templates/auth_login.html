@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login • Matr ERP</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / Login</nav>
+    </header>
+
+    <main class="content">
+      <section class="card">
+        <h2>Login</h2>
+        {% if error %}
+          <p class="alert alert-error">{{ error }}</p>
+        {% endif %}
+        <form class="form" action="/auth/login" method="post">
+          <div class="form-grid">
+            <label>Username
+              <input type="text" name="username" required />
+            </label>
+            <label>Password
+              <input type="password" name="password" required />
+            </label>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Login</button>
+          </div>
+        </form>
+        <p class="muted">Default admin: <code>admin/admin</code>. Change after testing.</p>
+      </section>
+    </main>
+
+    <footer class="footer">Login • Matr ERP</footer>
+  </body>
+ </html>

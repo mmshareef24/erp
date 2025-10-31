@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Production • Labels</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <style>
+    body { padding: 16px; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .labels { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+    .label { border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
+    .label h3 { margin: 0 0 8px 0; font-size: 16px; }
+    .barcode { width: 100%; height: 90px; }
+    @media print {
+      .toolbar { display: none; }
+      body { padding: 0; }
+      .labels { gap: 8px; }
+      .label { page-break-inside: avoid; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+</head>
+<body>
+  <div class="toolbar">
+    <div>
+      <strong>Work Order:</strong> {{ wo.id }}
+      &nbsp;•&nbsp;
+      <strong>Product:</strong> {{ product }}
+      &nbsp;•&nbsp;
+      <strong>Labels:</strong> {{ qty }}
+    </div>
+    <div style="display:flex; gap:8px">
+      <button onclick="window.print()" class="btn">Print</button>
+      <a href="/production/work_orders/{{ wo.id }}" class="btn">Back to WO</a>
+    </div>
+  </div>
+
+  <div class="labels" id="labels">
+    {% for i in range(qty) %}
+      <div class="label">
+        <h3>{{ product }}</h3>
+        <svg class="barcode" data-code="{{ product }}"></svg>
+        <div style="font-size:12px; color:#666; margin-top:6px">WO {{ wo.id }} • {{ loop.index }}/{{ qty }}</div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <script>
+    (function() {
+      const svgs = document.querySelectorAll('svg.barcode');
+      svgs.forEach(el => {
+        const code = el.getAttribute('data-code') || '';
+        try {
+          JsBarcode(el, code, { format: 'CODE128', displayValue: true, fontSize: 14, margin: 2 });
+        } catch (e) {
+          // Fallback: show text if barcode library fails
+          const txt = document.createElement('div');
+          txt.textContent = code;
+          txt.style.fontSize = '14px';
+          el.replaceWith(txt);
+        }
+      });
+      // Auto-trigger print when arriving from completion
+      setTimeout(() => { try { window.print(); } catch (_) {} }, 300);
+    })();
+  </script>
+</body>
+</html>

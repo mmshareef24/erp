@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Purchases • Order {{ order.id[:8] }}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/purchases">Purchases</a> / <a href="/purchases/orders">Orders</a> / {{ order.id[:8] }}</nav>
+    </header>
+
+    <main class="content">
+      <div class="card">
+        <h2>Purchase Order</h2>
+        <div class="form-grid">
+          <div><strong>Vendor:</strong> {{ order.vendor }}</div>
+          <div><strong>Date:</strong> {{ order.date }}</div>
+          <div><strong>Status:</strong> {{ order.status }}</div>
+          <div><strong>Total:</strong> ${{ '%.2f'|format(order.total) }}</div>
+        </div>
+
+        <h3>Items</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Unit Cost</th>
+              <th>Line Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for it in order.items %}
+            <tr>
+              <td>{{ it.product }}</td>
+              <td>{{ it.quantity }}</td>
+              <td>${{ '%.2f'|format(it.unit_cost) }}</td>
+              <td>${{ '%.2f'|format(it.quantity * it.unit_cost) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <form class="form" action="/purchases/orders/{{ order.id }}/bill" method="post" style="margin-top: 1rem;">
+          <label>Tax Rate
+            <input type="number" name="tax_rate" step="0.01" min="0" value="0.00" />
+          </label>
+          <div class="actions">
+            <a class="btn" href="/purchases/orders">Back</a>
+            <button class="btn btn-primary" type="submit">Create Bill</button>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <footer class="footer">Purchases • Order</footer>
+  </body>
+  </html>

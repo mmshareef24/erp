@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sales • Payment {{ payment.id[:8] }}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/sales">Sales</a> / Payment {{ payment.id[:8] }}</nav>
+    </header>
+
+    <main class="content">
+      <div class="card">
+        <h2>Payment</h2>
+        <div class="form-grid">
+          <div><strong>Customer:</strong> {{ payment.customer }}</div>
+          <div><strong>Date:</strong> {{ payment.date }}</div>
+          <div><strong>Amount:</strong> ${{ '%.2f'|format(payment.amount) }}</div>
+          <div><strong>Method:</strong> {{ payment.method }}</div>
+          <div><strong>Invoice:</strong> {{ payment.invoice_id[:8] }}</div>
+          {% if payment.bank_account_id %}
+          <div><strong>Bank Account:</strong> {{ accounts_map.get(payment.bank_account_id) or payment.bank_account_id }}</div>
+          {% endif %}
+        </div>
+        <div class="actions">
+          <a class="btn" href="/sales/invoices">Back to Invoices</a>
+          <a class="btn" href="/sales/orders">Orders</a>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">Sales • Payment</footer>
+  </body>
+  </html>

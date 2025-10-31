@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings • Warehouses</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/settings">Settings</a> / Warehouses</nav>
+    </header>
+
+    <main class="content">
+      <div class="actions">
+        <a class="btn btn-primary" href="/settings/warehouses/new">New Warehouse</a>
+        <a class="btn" href="/settings/locations">Locations</a>
+        <a class="btn" href="/settings/company">Company</a>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for w in warehouses %}
+          <tr>
+            <td>{{ w.name }}</td>
+          </tr>
+          {% else %}
+          <tr><td class="muted">No warehouses yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </main>
+
+    <footer class="footer">Settings • Warehouses</footer>
+  </body>
+</html>

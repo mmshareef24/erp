@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Overtime</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Overtime</h1>
+    <form method="post" action="/time/overtime" class="form-inline">
+      <select name="emp_id" required>
+        <option value="">Select Employee</option>
+        {% for emp in employees %}
+          <option value="{{ emp.emp_id }}">{{ emp.emp_id }} - {{ emp.name }}</option>
+        {% endfor %}
+      </select>
+      <input type="number" step="0.1" name="hours" placeholder="Hours" required />
+      <input type="text" name="reason" placeholder="Reason" />
+      <button type="submit" class="btn">Submit</button>
+    </form>
+
+    <h2 class="mt-2">Requests</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Date</th>
+          <th>Employee</th>
+          <th>Hours</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for it in items %}
+        <tr>
+          <td>{{ it.id }}</td>
+          <td>{{ it.date }}</td>
+          <td>{{ it.emp_id }}</td>
+          <td>{{ '%.2f'|format(it.hours or 0) }}</td>
+          <td>{{ it.status }}</td>
+          <td>
+            {% if it.status != 'approved' %}
+              <form method="post" action="/time/overtime/{{ it.id }}/approve" style="display:inline;">
+                <button type="submit" class="btn">Approve</button>
+              </form>
+            {% else %}
+              —
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6">No overtime requests yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="mt-2"><a href="/app/time">← Back to Time</a></p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{% extends "app.html" %}
+{% block title %}Edit GL Account{% endblock %}
+{% block content %}
+<h2>Edit GL Account {{ account.code }}</h2>
+<form method="post" action="/accounting/coa/{{ account.code }}/edit" class="form-grid">
+  {% if error %}
+  <div class="error" style="color:#b00; margin-bottom:8px;">{{ error }}</div>
+  {% endif %}
+  <label>
+    Code
+    <input type="text" value="{{ account.code }}" disabled />
+  </label>
+  <label>
+    Name
+    <input type="text" name="name" required value="{{ account.name }}" />
+  </label>
+  <label>
+    Type
+    <select name="type" required>
+      {% for t in types %}
+      <option value="{{ t }}" {% if t == account.type %}selected{% endif %}>{{ t|capitalize }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <div class="actions">
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn" href="/accounting/coa">Cancel</a>
+  </div>
+</form>
+{% endblock %}

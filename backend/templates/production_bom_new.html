@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Production • New BOM</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/production">Production</a> / <a href="/production/boms">BOMs</a> / New</nav>
+    </header>
+
+    <main class="content">
+      <form class="form" action="/production/boms" method="post">
+        <div class="card">
+          <h2>New Bill of Materials</h2>
+          <div class="form-grid">
+            {% if products %}
+            <label>Product
+              <div class="drillpick">
+                <input type="text" id="bom_product_display" placeholder="Select product" readonly required />
+                <input type="hidden" name="product" id="bom_product_value" />
+                <button type="button" class="btn" onclick="openPicker('bom_product_value','bom_product_display')">Pick</button>
+              </div>
+            </label>
+            {% else %}
+            <label>Product (manual)
+              <input type="text" name="product" required />
+            </label>
+            {% endif %}
+          </div>
+          <div class="card" style="margin-top:16px">
+            <h3>Components</h3>
+            {% if products %}
+            <table class="table">
+              <thead>
+                <tr>
+                  <th style="width:60%">Product</th>
+                  <th style="width:20%">Qty per unit</th>
+                  <th style="width:20%">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="comp-rows">
+                <tr>
+                  <td>
+                    <div class="drillpick">
+                      <input type="text" placeholder="Select component" readonly required />
+                      <input type="hidden" name="comp_product" />
+                      <button class="btn" type="button" onclick="openPickerForRow(this)">Pick</button>
+                    </div>
+                  </td>
+                  <td><input type="number" name="comp_qty" step="0.01" min="0" value="1" required /></td>
+                  <td><button class="btn" type="button" onclick="removeRow(this)">Remove</button></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="actions">
+              <button class="btn" type="button" onclick="addRow()">Add Component</button>
+            </div>
+            {% else %}
+            <p class="muted">No products available in the catalog. You can still enter components manually below.</p>
+            {% endif %}
+            <details style="margin-top:12px">
+              <summary>Manual components (optional)</summary>
+              <label>Enter one per line, format: SKU: qty
+                <textarea name="components_text" rows="6" placeholder="COMP-1: 2\nCOMP-2: 1"></textarea>
+              </label>
+            </details>
+          </div>
+          <style>
+            .hidden{display:none}
+            .picker{position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:1000; display:flex; align-items:center; justify-content:center}
+            .picker .card{width:min(640px, 90vw); max-height:80vh; overflow:auto}
+            .pick-list{display:grid; grid-template-columns:1fr; gap:6px}
+            .alpha{display:flex; flex-wrap:wrap; gap:6px}
+            .alpha .btn{padding:4px 8px}
+            .cats{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
+            .cats .btn{padding:4px 8px}
+            .pick-item{display:flex; flex-direction:column; align-items:flex-start}
+            .pick-item .meta{font-size:12px; color:#666}
+            .drillpick{display:flex; gap:8px; align-items:center}
+            .drillpick input[readonly]{background:#f7f7f7; cursor:pointer}
+          </style>
+          <div id="picker" class="picker hidden">
+            <div class="card">
+              <h3>Select Product</h3>
+              <div class="form-grid">
+                <label>Search
+                  <input type="text" id="picker-search" placeholder="Type to filter" oninput="filterPicker()" />
+                </label>
+              </div>
+              <div class="alpha" id="picker-alpha">
+                <button type="button" class="btn" onclick="setLetter('')">All</button>
+                {% for ch in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' %}
+                <button type="button" class="btn" onclick="setLetter('{{ ch }}')">{{ ch }}</button>
+                {% endfor %}
+              </div>
+              <div class="cats" id="picker-cats">
+                <!-- category chips populated dynamically -->
+              </div>
+              <div class="pick-list" id="picker-list">
+                {% for p in products %}
+                <button type="button" class="btn pick-item" data-name="{{ p.name }}" data-letter="{{ p.name[:1]|upper }}" data-category="{{ (p.name|split('-')|first)|split(' ')|first }}" onclick="chooseProduct('{{ p.name }}')">
+                  <span>{{ p.name }}</span>
+                  <span class="meta">SKU: {{ p.name }}</span>
+                </button>
+                {% endfor %}
+                {% if not products %}
+                <p class="muted">No products found.</p>
+                {% endif %}
+              </div>
+              <div class="actions">
+                <button class="btn" type="button" onclick="closePicker()">Close</button>
+              </div>
+            </div>
+          </div>
+          <script>
+            var currentHidden = null, currentDisplay = null, currentLetter = '', currentCategory = '';
+            function openPicker(hiddenId, displayId){
+              currentHidden = document.getElementById(hiddenId);
+              currentDisplay = document.getElementById(displayId);
+              document.getElementById('picker').classList.remove('hidden');
+              document.getElementById('picker-search').value='';
+              buildCategories();
+              filterPicker();
+            }
+            function openPickerForRow(btn){
+              var wrap = btn.closest('.drillpick');
+              currentHidden = wrap.querySelector('input[type=hidden][name=comp_product]');
+              currentDisplay = wrap.querySelector('input[type=text]');
+              document.getElementById('picker').classList.remove('hidden');
+              document.getElementById('picker-search').value='';
+              buildCategories();
+              filterPicker();
+            }
+            function closePicker(){
+              document.getElementById('picker').classList.add('hidden');
+              currentHidden = null; currentDisplay = null;
+            }
+            function chooseProduct(name){
+              if(currentHidden){ currentHidden.value = name; }
+              if(currentDisplay){ currentDisplay.value = name; }
+              closePicker();
+            }
+            function setLetter(ch){ currentLetter = ch || ''; filterPicker(); }
+            function setCategory(cat){ currentCategory = cat || ''; filterPicker(); }
+            function buildCategories(){
+              var cats = new Set();
+              document.querySelectorAll('#picker-list .pick-item').forEach(function(it){
+                var c = it.dataset.category || '';
+                if (c) cats.add(c);
+              });
+              var cont = document.getElementById('picker-cats');
+              cont.innerHTML = '';
+              var allBtn = document.createElement('button');
+              allBtn.type = 'button';
+              allBtn.className = 'btn';
+              allBtn.textContent = 'All Categories';
+              allBtn.onclick = function(){ setCategory(''); };
+              cont.appendChild(allBtn);
+              Array.from(cats).sort().forEach(function(c){
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'btn';
+                b.textContent = c;
+                b.onclick = function(){ setCategory(c); };
+                cont.appendChild(b);
+              });
+            }
+            function filterPicker(){
+              var q = (document.getElementById('picker-search').value || '').toLowerCase();
+              var items = Array.from(document.querySelectorAll('#picker-list .pick-item'));
+              items.forEach(function(it){
+                var nm = (it.dataset.name || '').toLowerCase();
+                var lt = (it.dataset.letter || '').toUpperCase();
+                var ct = (it.dataset.category || '');
+                var matchQ = !q || nm.indexOf(q) !== -1;
+                var matchL = !currentLetter || lt === currentLetter;
+                var matchC = !currentCategory || ct === currentCategory;
+                it.style.display = (matchQ && matchL && matchC) ? '' : 'none';
+              });
+            }
+            function addRow(){
+              var tbody = document.getElementById('comp-rows');
+              var tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>
+                  <div class=\"drillpick\">
+                    <input type=\"text\" placeholder=\"Select component\" readonly required />
+                    <input type=\"hidden\" name=\"comp_product\" />
+                    <button class=\"btn\" type=\"button\" onclick=\"openPickerForRow(this)\">Pick</button>
+                  </div>
+                </td>
+                <td><input type=\"number\" name=\"comp_qty\" step=\"0.01\" min=\"0\" value=\"1\" required /></td>
+                <td><button class=\"btn\" type=\"button\" onclick=\"removeRow(this)\">Remove</button></td>
+              `;
+              tbody.appendChild(tr);
+            }
+            function removeRow(btn){
+              var tr = btn.closest('tr');
+              var tbody = document.getElementById('comp-rows');
+              if (tbody && tr && tbody.rows.length > 1) {
+                tbody.removeChild(tr);
+              }
+            }
+          </script>
+          <div class="actions">
+            <a class="btn" href="/production/boms">Cancel</a>
+            <button class="btn btn-primary" type="submit">Save</button>
+          </div>
+        </div>
+      </form>
+    </main>
+
+    <footer class="footer">Production • New BOM</footer>
+  </body>
+</html>

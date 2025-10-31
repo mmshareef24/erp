@@ -1,0 +1,22 @@
+{% extends "app.html" %}
+{% block title %}Delete GL Account{% endblock %}
+{% block content %}
+<h2>Delete GL Account {{ account.code }}</h2>
+
+{% if error %}
+<div class="error" style="color:#b00; margin-bottom:8px;">{{ error }}</div>
+{% endif %}
+
+<p><strong>{{ account.name }}</strong> ({{ account.type|capitalize }})</p>
+
+{% if in_use %}
+  <div class="warning" style="color:#b00;">This account is referenced in journal entries and cannot be deleted.</div>
+  <p><a class="btn" href="/accounting/coa">Back to Chart of Accounts</a></p>
+{% else %}
+  <p>Are you sure you want to delete this account? This action cannot be undone.</p>
+  <form method="post" action="/accounting/coa/{{ account.code }}/delete">
+    <button class="btn btn-danger" type="submit">Delete Account</button>
+    <a class="btn" href="/accounting/coa">Cancel</a>
+  </form>
+{% endif %}
+{% endblock %}

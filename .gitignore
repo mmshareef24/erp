@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# Virtual environments and local env files
+.venv/
+.env
+
+# Local databases and generated data
+backend/data/app.db
+
+# VSCode and IDE settings (optional)
+.vscode/
+.idea/

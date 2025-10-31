@@ -1,0 +1,25 @@
+{% extends "app.html" %}
+{% block title %}Balance Sheet{% endblock %}
+{% block content %}
+<div class="layout-with-sidebar">
+  <aside class="sidebar">
+    <nav class="submodule-nav">
+      <a href="/accounting/coa">Chart of Accounts</a>
+      <a href="/accounting/journals">Journals</a>
+      <a href="/accounting/trial-balance">Trial Balance</a>
+      <a href="/accounting/pl">Profit &amp; Loss</a>
+      <a class="active" href="/accounting/balance-sheet">Balance Sheet</a>
+    </nav>
+  </aside>
+  <section>
+    <h2>Balance Sheet</h2>
+    <table class="table">
+      <tbody>
+        <tr><td>Assets</td><td style="text-align:right;">{{ '%.2f'|format(bs.assets or 0) }}</td></tr>
+        <tr><td>Liabilities</td><td style="text-align:right;">{{ '%.2f'|format(bs.liabilities or 0) }}</td></tr>
+        <tr><td>Equity</td><td style="text-align:right;">{{ '%.2f'|format(bs.equity or 0) }}</td></tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+{% endblock %}

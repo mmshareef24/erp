@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sales • Quote {{ quote.id[:8] }}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/sales">Sales</a> / <a href="/sales/quotes">Quotes</a> / {{ quote.id[:8] }}</nav>
+    </header>
+
+    <main class="content">
+      <div class="layout-with-sidebar">
+        <aside class="sidebar">
+          <nav class="submodule-nav">
+            <a href="/sales/orders">Orders</a>
+            <a class="active" href="/sales/quotes">Quotes</a>
+            <a href="/sales/invoices">Invoices</a>
+          </nav>
+        </aside>
+        <section>
+          <section class="card">
+            <h2>Quote {{ quote.id }}</h2>
+            <p class="muted">Date: {{ quote.date }} • Status: {{ quote.status }}</p>
+            <p><strong>Customer:</strong> {{ quote.customer }}</p>
+
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Qty</th>
+                  <th>Unit Price</th>
+                  <th>Line Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in quote.items %}
+                <tr>
+                  <td>{{ item.product }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>${{ '%.2f'|format(item.unit_price) }}</td>
+                  <td>${{ '%.2f'|format(item.quantity * item.unit_price) }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" style="text-align:right"><strong>Total</strong></td>
+                  <td><strong>${{ '%.2f'|format(quote.total) }}</strong></td>
+                </tr>
+              </tfoot>
+            </table>
+            <div class="actions">
+              <form action="/sales/quotes/{{ quote.id }}/confirm" method="post">
+                <button class="btn btn-primary" type="submit">Confirm & Create Order</button>
+              </form>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">Sales • Quote</footer>
+  </body>
+  </html>

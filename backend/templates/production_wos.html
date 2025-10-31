@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Production • Work Orders</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/production">Production</a> / Work Orders</nav>
+    </header>
+
+    <main class="content">
+      <div class="actions">
+        <a class="btn" href="/production/boms">BOMs</a>
+        <a class="btn btn-primary" href="/production/work_orders/new">New Work Order</a>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Warehouse</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for w in wos %}
+          <tr>
+            <td>{{ w.date }}</td>
+            <td>{{ w.product }}</td>
+            <td>{{ w.quantity }}</td>
+            <td>{{ w.warehouse }}</td>
+            <td>{{ w.location }}</td>
+            <td>{{ w.status }}</td>
+            <td><a class="btn" href="/production/work_orders/{{ w.id }}">Open</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="muted">No work orders yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </main>
+
+    <footer class="footer">Production • Work Orders</footer>
+  </body>
+</html>

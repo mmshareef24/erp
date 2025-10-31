@@ -1,0 +1,39 @@
+{% extends "app.html" %}
+{% block title %}Trial Balance{% endblock %}
+{% block content %}
+<div class="layout-with-sidebar">
+  <aside class="sidebar">
+    <nav class="submodule-nav">
+      <a href="/accounting/coa">Chart of Accounts</a>
+      <a href="/accounting/journals">Journals</a>
+      <a class="active" href="/accounting/trial-balance">Trial Balance</a>
+      <a href="/accounting/pl">Profit &amp; Loss</a>
+      <a href="/accounting/balance-sheet">Balance Sheet</a>
+    </nav>
+  </aside>
+  <section>
+    <h2>Trial Balance</h2>
+    {% if tb and tb|length > 0 %}
+    <table class="table">
+      <thead>
+        <tr><th>Code</th><th>Name</th><th>Type</th><th>Debit</th><th>Credit</th><th>Net</th></tr>
+      </thead>
+      <tbody>
+        {% for row in tb %}
+        <tr>
+          <td>{{ row.code }}</td>
+          <td>{{ row.name }}</td>
+          <td>{{ row.type }}</td>
+          <td style="text-align:right;">{{ '%.2f'|format(row.debit or 0) }}</td>
+          <td style="text-align:right;">{{ '%.2f'|format(row.credit or 0) }}</td>
+          <td style="text-align:right;">{{ '%.2f'|format(row.net or 0) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No journal entries posted yet.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

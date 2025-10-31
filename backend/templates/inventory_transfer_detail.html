@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory • Transfer {{ transfer.id }}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/inventory">Inventory</a> / <a href="/inventory/transfers">Transfers</a> / {{ transfer.id }}</nav>
+    </header>
+
+    <main class="content">
+      <div class="card">
+        <h2>Transfer Details</h2>
+        <div class="grid two-cols">
+          <div>
+            <div><strong>ID:</strong> {{ transfer.id }}</div>
+            <div><strong>Date:</strong> {{ transfer.date }}</div>
+            <div><strong>Product:</strong> {{ transfer.product }}</div>
+            <div><strong>Quantity:</strong> {{ transfer.quantity }}</div>
+            <div><strong>Unit Cost:</strong> ${{ '%.2f'|format(transfer.unit_cost) }}</div>
+          </div>
+          <div>
+            <div><strong>From:</strong> {{ transfer.from_warehouse }} / {{ transfer.from_location or '(None)' }}</div>
+            <div><strong>To:</strong> {{ transfer.to_warehouse }} / {{ transfer.to_location or '(None)' }}</div>
+            <div><strong>Ref:</strong> XFER-{{ transfer.id }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Related Moves</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Unit Cost</th>
+              <th>Warehouse</th>
+              <th>Location</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in moves %}
+            <tr>
+              <td>{{ m.date }}</td>
+              <td>{{ m.type }}</td>
+              <td>{{ m.product }}</td>
+              <td>{{ m.quantity }}</td>
+              <td>${{ '%.2f'|format(m.unit_cost) }}</td>
+              <td>{{ m.warehouse }}</td>
+              <td>{{ m.location }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="muted">No related moves found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="actions">
+          <a class="btn" href="/inventory/transfers">Back to Transfers</a>
+          <a class="btn" href="/inventory/moves?ref=XFER-{{ transfer.id }}">View in Moves</a>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">Inventory • Transfer {{ transfer.id }}</footer>
+  </body>
+ </html>

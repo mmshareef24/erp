@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Positions • Settings • Matr ERP</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/apps/settings">Settings</a> / Positions</nav>
+    </header>
+
+    <main class="content">
+      <section class="content-header">
+        <h1>Positions</h1>
+        <div class="actions">
+          <a class="btn btn-primary" href="/settings/positions/new">New Position</a>
+        </div>
+      </section>
+
+      <section>
+        {% if positions %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Org Unit</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in positions %}
+            <tr>
+              <td>{{ p.id }}</td>
+              <td>{{ p.title }}</td>
+              <td>
+                {% set unit = (org_units | selectattr('id', 'equalto', p.org_unit_id) | list) %}
+                {% if unit and unit[0] %}{{ unit[0].name }}{% else %}-{% endif %}
+              </td>
+              <td>
+                <a class="btn" href="/settings/positions/{{ p.id }}/edit">Edit</a>
+                <a class="btn btn-danger" href="/settings/positions/{{ p.id }}/delete">Delete</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="muted">No positions defined yet. Create your first position.</p>
+        {% endif %}
+      </section>
+    </main>
+
+    <footer class="footer">Settings • Positions</footer>
+  </body>
+  </html>

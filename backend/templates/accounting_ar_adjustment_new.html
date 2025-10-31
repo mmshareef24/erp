@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accounting • New AR Adjustment</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/accounting">Accounting</a> / New Adjustment</nav>
+    </header>
+
+    <main class="content">
+      <div class="card">
+        <h2>New AR Adjustment</h2>
+        <form method="post" action="/accounting/ar/adjustments" class="form-grid">
+          <label>
+            Customer
+            <select name="customer" required>
+              <option value="">Select customer</option>
+              {% for c in customers %}
+              <option value="{{ c.name }}">{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            Amount
+            <input type="number" step="0.01" name="amount" required />
+          </label>
+          <label>
+            Direction
+            <select name="direction">
+              <option value="debit">Debit (increase AR)</option>
+              <option value="credit">Credit (decrease AR)</option>
+            </select>
+          </label>
+          <label>
+            Invoice (optional)
+            <input type="text" name="invoice_id" placeholder="Invoice ID" />
+          </label>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Create</button>
+            <a class="btn" href="/accounting/ar">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <footer class="footer">Accounting • AR Adjustment</footer>
+  </body>
+</html>

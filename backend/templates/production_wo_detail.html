@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Production • Work Order</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/production">Production</a> / <a href="/production/work_orders">Work Orders</a> / {{ wo.id }}</nav>
+    </header>
+
+    <main class="content">
+      <div class="card">
+        <h2>Work Order</h2>
+        <div class="grid-2">
+          <div>
+            <p><strong>ID:</strong> {{ wo.id }}</p>
+            <p><strong>Date:</strong> {{ wo.date }}</p>
+            <p><strong>Status:</strong> {{ wo.status }}</p>
+          </div>
+          <div>
+            <p><strong>Product:</strong> {{ wo.product }}</p>
+            <p><strong>Quantity:</strong> {{ wo.quantity }}</p>
+            <p><strong>Warehouse/Location:</strong> {{ wo.warehouse }} / {{ wo.location }}</p>
+            <p><strong>Issue Method:</strong> {{ wo.issue_method or 'manual' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Bill of Materials</h3>
+        {% if bom %}
+        <ul>
+          {% for c in bom.components %}
+          <li>{{ c.product }} × {{ c.quantity }} per unit</li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="muted">No BOM found for {{ wo.product }}.</p>
+        {% endif %}
+      </div>
+
+      {% if wo.reserved %}
+      <div class="card">
+        <h3>Reserved Components</h3>
+        <table class="table">
+          <thead><tr><th>Product</th><th>Qty</th></tr></thead>
+          <tbody>
+            {% for r in wo.reserved %}
+            <tr><td>{{ r.product }}</td><td>{{ r.quantity }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+
+      <div class="card">
+        <h3>Consumption</h3>
+        <table class="table">
+          <thead><tr><th>Product</th><th>Qty</th><th>Unit Cost</th></tr></thead>
+          <tbody>
+            {% for l in wo.consumed %}
+            <tr><td>{{ l.product }}</td><td>{{ l.quantity }}</td><td>${{ '%.2f'|format(l.unit_cost) }}</td></tr>
+            {% else %}
+            <tr><td colspan="3" class="muted">No consumption recorded.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if wo.issue_method == 'manual' %}
+        <form action="/production/work_orders/{{ wo.id }}/issue" method="post" class="inline-form">
+          <label>Issue Qty (finished goods equivalent)
+            <input type="number" name="issue_qty" step="0.01" min="0" required />
+          </label>
+          <button class="btn" type="submit">Issue Materials</button>
+        </form>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <h3>Production</h3>
+        <table class="table">
+          <thead><tr><th>Product</th><th>Qty</th><th>Unit Cost</th></tr></thead>
+          <tbody>
+            {% for l in wo.produced %}
+            <tr><td>{{ l.product }}</td><td>{{ l.quantity }}</td><td>${{ '%.2f'|format(l.unit_cost) }}</td></tr>
+            {% else %}
+            <tr><td colspan="3" class="muted">No production recorded.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if wo.scrap and wo.scrap|length > 0 %}
+        <p><strong>Scrap:</strong> {% for s in wo.scrap %}{{ s.quantity }}{% if not loop.last %}, {% endif %}{% endfor %} units</p>
+        {% endif %}
+      </div>
+
+      {% if wo.operations and wo.operations|length > 0 %}
+      <div class="card">
+        <h3>Operations</h3>
+        <table class="table">
+          <thead><tr><th>Step</th><th>Minutes</th><th>Rate</th></tr></thead>
+          <tbody>
+            {% for op in wo.operations %}
+            <tr><td>{{ op.name }}</td><td>{{ op.minutes }}</td><td>${{ '%.2f'|format(op.rate) }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+
+      <div class="actions">
+        {% if wo.status == 'draft' %}
+        <form action="/production/work_orders/{{ wo.id }}/start" method="post" style="display:inline-block"><button class="btn btn-primary" type="submit">Start (Consume Materials)</button></form>
+        {% endif %}
+        {% if wo.status in ['draft','in_progress'] %}
+        <form action="/production/work_orders/{{ wo.id }}/complete" method="post" style="display:inline-flex; gap:8px; align-items:center">
+          <label>Produce Qty
+            <input type="number" name="produce_qty" step="0.01" min="0" value="{{ wo.quantity }}" />
+          </label>
+          <label>Scrap Qty
+            <input type="number" name="scrap_qty" step="0.01" min="0" value="0" />
+          </label>
+          <button class="btn" type="submit">Complete (Produce)</button>
+        </form>
+        {% endif %}
+        <a class="btn" href="/production/work_orders/{{ wo.id }}/labels?qty={{ (wo.quantity|int) if wo.quantity else 1 }}">Print Barcode Labels</a>
+        <a class="btn" href="/inventory/moves?ref=WO-{{ wo.id }}">View Inventory Moves for WO</a>
+        <a class="btn" href="/production/work_orders">Back</a>
+      </div>
+    </main>
+
+    <footer class="footer">Production • Work Order</footer>
+  </body>
+</html>

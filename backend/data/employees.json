@@ -1,0 +1,13 @@
+[
+  {
+    "emp_id": "E001",
+    "name": "Ahmed Ali",
+    "nationality": "Saudi",
+    "hire_date": "2018-06-01",
+    "base_salary": 8000.0,
+    "hra": 2000.0,
+    "transport": 800.0,
+    "contract_type": "indefinite",
+    "monthly_paid": true
+  }
+]

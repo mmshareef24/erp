@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Purchases • Bill {{ bill.id[:8] }}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/purchases">Purchases</a> / <a href="/purchases/bills">Bills</a> / {{ bill.id[:8] }}</nav>
+    </header>
+
+    <main class="content">
+      <div class="card">
+        <h2>Bill</h2>
+        <div class="form-grid">
+          <div><strong>Vendor:</strong> {{ bill.vendor }}</div>
+          <div><strong>Date:</strong> {{ bill.date }}</div>
+          <div><strong>Status:</strong> {{ bill.status }}</div>
+          <div><strong>Subtotal:</strong> ${{ '%.2f'|format(bill.subtotal) }}</div>
+          <div><strong>Tax Rate:</strong> {{ '%.2f'|format(bill.tax_rate * 100) }}%</div>
+          <div><strong>Total:</strong> ${{ '%.2f'|format(bill.total) }}</div>
+        </div>
+
+        <h3>Items</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Unit Cost</th>
+              <th>Line Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for it in bill.items %}
+            <tr>
+              <td>{{ it.product }}</td>
+              <td>{{ it.quantity }}</td>
+              <td>${{ '%.2f'|format(it.unit_cost) }}</td>
+              <td>${{ '%.2f'|format(it.quantity * it.unit_cost) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        {% if bill.status == 'open' %}
+        <form class="form-grid" action="/purchases/bills/{{ bill.id }}/pay" method="post" style="margin-top: 1rem;">
+          <label>Method
+            <select name="method">
+              <option value="cash">Cash</option>
+              <option value="bank">Bank</option>
+            </select>
+          </label>
+          <label>Bank Account (if bank)
+            <select name="bank_account_id">
+              <option value="">Select account</option>
+              {% for a in accounts %}
+              <option value="{{ a.id }}">{{ a.name }} ({{ a.number }})</option>
+              {% endfor %}
+            </select>
+          </label>
+          <div class="actions">
+            <a class="btn" href="/purchases/bills">Back</a>
+            <button class="btn btn-primary" type="submit">Record Payment</button>
+          </div>
+        </form>
+        {% else %}
+          <div class="actions">
+            <a class="btn" href="/purchases/bills">Back</a>
+          </div>
+        {% endif %}
+      </div>
+    </main>
+
+    <footer class="footer">Purchases • Bill</footer>
+  </body>
+  </html>

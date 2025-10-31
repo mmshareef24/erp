@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accounting • AR Invoices</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/accounting">Accounting</a> / AR Invoices</nav>
+    </header>
+
+    <main class="content">
+      <div class="toolbar">
+        <h1>AR by Invoice</h1>
+      </div>
+      {% if invoices %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Invoice Date</th>
+            <th>Due Date</th>
+            <th>Total</th>
+            <th>Open</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in invoices %}
+          <tr>
+            <td><a href="/sales/invoices/{{ inv.id }}">{{ inv.id[:8] }}</a></td>
+            <td>{{ inv.customer }}</td>
+            <td>{{ inv.date }}</td>
+            <td>{{ inv.due_date }}</td>
+            <td>${{ '%.2f'|format(inv.total) }}</td>
+            <td>${{ '%.2f'|format(inv.open) }}</td>
+            <td>{{ inv.status }}</td>
+            <td>
+              <a class="btn" href="/sales/invoices/{{ inv.id }}">View</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="muted">No invoices found.</p>
+      {% endif %}
+    </main>
+
+    <footer class="footer">Accounting • AR Invoices</footer>
+  </body>
+</html>

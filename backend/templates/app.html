@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ app_item.name }} • Matr ERP</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / {{ app_item.name }}</nav>
+    </header>
+
+    <main class="content">
+      <section class="app-header" style="--tile-color: {{ app_item.color }}">
+        <div class="app-icon">{{ app_item.icon }}</div>
+        <div>
+          <h1 class="app-title">{{ app_item.name }}</h1>
+          <p class="app-desc">{{ app_item.description }}</p>
+        </div>
+      </section>
+
+      <section class="coming-soon">
+        <h2>Coming soon</h2>
+        <p>
+          This is a stub page. We will add real features (models, views,
+          permissions, workflows) incrementally.
+        </p>
+        {% if app_item.slug == 'sales' %}
+        <div class="actions">
+          <a class="btn btn-primary" href="/sales/quotes">Open Quotes</a>
+          <a class="btn" href="/sales/quotes/new">New Quote</a>
+          <a class="btn" href="/sales/orders">Orders</a>
+          <a class="btn" href="/sales/invoices">Invoices</a>
+          <a class="btn" href="/catalogs/customers">Customers</a>
+          <a class="btn" href="/catalogs/products">Products</a>
+          <a class="btn" href="/accounting/ar">AR Ledger</a>
+        </div>
+        {% endif %}
+        {% if app_item.slug == 'accounting' %}
+        <div class="actions">
+          <a class="btn" href="/accounting/ar">AR Ledger</a>
+          <a class="btn" href="/accounting/ar/customers">AR by Customer</a>
+          <a class="btn" href="/accounting/ar/invoices">AR by Invoice</a>
+          <a class="btn" href="/accounting/ar/aging">Aging</a>
+          <a class="btn" href="/accounting/ar/adjustments/new">New Adjustment</a>
+          <span class="divider"></span>
+          <a class="btn" href="/accounting/coa">Chart of Accounts</a>
+          <a class="btn" href="/accounting/journals">Journals</a>
+          <a class="btn" href="/accounting/trial-balance">Trial Balance</a>
+          <a class="btn" href="/accounting/pl">Profit &amp; Loss</a>
+          <a class="btn" href="/accounting/balance-sheet">Balance Sheet</a>
+        </div>
+        {% endif %}
+        {% if app_item.slug == 'purchases' %}
+        <div class="actions">
+          <a class="btn btn-primary" href="/purchases/orders">Purchase Orders</a>
+          <a class="btn" href="/purchases/orders/new">New PO</a>
+          <a class="btn" href="/purchases/bills">Bills</a>
+        </div>
+        {% endif %}
+        {% if app_item.slug == 'inventory' %}
+        <div class="actions">
+          <a class="btn btn-primary" href="/inventory/items">Items</a>
+          <a class="btn" href="/inventory/moves">Moves</a>
+          <a class="btn" href="/inventory/receive">Receive</a>
+          <a class="btn" href="/inventory/issue">Issue</a>
+        </div>
+        {% endif %}
+        {% if app_item.slug == 'production' %}
+        <div class="actions">
+          <a class="btn btn-primary" href="/production/work_orders">Work Orders</a>
+          <a class="btn" href="/production/work_orders/new">New Work Order</a>
+          <a class="btn" href="/production/boms">BOMs</a>
+          <a class="btn" href="/production/boms/new">New BOM</a>
+        </div>
+        {% endif %}
+        {% if app_item.slug == 'mrp' %}
+        <div class="actions">
+          <a class="btn btn-primary" href="/mrp/plan">Open MRP Plan</a>
+          <a class="btn" href="/production/boms">Manage BOMs</a>
+          <a class="btn" href="/production/work_orders">Work Orders</a>
+          <a class="btn" href="/inventory/items">Inventory</a>
+        </div>
+        {% endif %}
+        {% if app_item.slug == 'employees' %}
+        <div class="actions">
+          <a class="btn btn-primary" href="/employees">Directory</a>
+          <a class="btn" href="/employees/new">New Employee</a>
+        </div>
+        {% endif %}
+        {% if app_item.slug == 'time' %}
+        <div class="actions">
+          <a class="btn btn-primary" href="/time/shifts">Shifts</a>
+          <a class="btn" href="/time/attendance">Attendance</a>
+          <a class="btn" href="/time/timesheets">Timesheets</a>
+          <a class="btn" href="/time/overtime">Overtime</a>
+          <a class="btn" href="/time/leave">Leave</a>
+        </div>
+        {% endif %}
+        {% if app_item.slug == 'settings' %}
+        <div class="actions">
+          <a class="btn btn-primary" href="/settings/company">Company</a>
+          <a class="btn" href="/settings/warehouses">Warehouses</a>
+          <a class="btn" href="/settings/locations">Locations</a>
+          <span class="divider"></span>
+          <a class="btn" href="/settings/org-units">Org Units</a>
+          <a class="btn" href="/settings/positions">Positions</a>
+        </div>
+        {% endif %}
+      </section>
+    </main>
+
+    <footer class="footer">Matr ERP • Module placeholder</footer>
+  </body>
+  </html>

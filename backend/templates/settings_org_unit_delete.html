@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Delete Org Unit • Settings • Matr ERP</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/apps/settings">Settings</a> / <a href="/settings/org-units">Org Units</a> / Delete {{ unit.id }}</nav>
+    </header>
+
+    <main class="content">
+      <section class="content-header">
+        <h1>Delete Organization Unit</h1>
+      </section>
+
+      <section class="card">
+        <p><strong>Unit:</strong> {{ unit.name }} ({{ unit.id }})</p>
+        <p><strong>Parent:</strong>
+          {% if unit.parent_id %}
+            {{ unit.parent_id }}
+          {% else %}
+            (none)
+          {% endif %}
+        </p>
+
+        {% if blocked %}
+        <div class="alert alert-error">
+          <p>Deletion is blocked. Resolve the following references first:</p>
+          <ul>
+            {% if child_count %}<li>{{ child_count }} child unit(s)</li>{% endif %}
+            {% if pos_count %}<li>{{ pos_count }} position(s) linked to this unit</li>{% endif %}
+            {% if emp_count %}<li>{{ emp_count }} employee(s) assigned to this unit</li>{% endif %}
+          </ul>
+        </div>
+        <div class="form-actions">
+          <a class="btn" href="/settings/org-units">Back</a>
+        </div>
+        {% else %}
+        <form method="post" action="/settings/org-units/{{ unit.id }}/delete" class="form-grid">
+          <p class="muted">This action permanently removes the unit. This cannot be undone.</p>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-danger">Confirm Delete</button>
+            <a class="btn" href="/settings/org-units">Cancel</a>
+          </div>
+        </form>
+        {% endif %}
+      </section>
+    </main>
+
+    <footer class="footer">Settings • Organization</footer>
+  </body>
+</html>

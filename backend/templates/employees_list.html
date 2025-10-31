@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employees • Directory</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/employees">Employees</a> / Directory</nav>
+    </header>
+
+    <main class="content">
+      <section class="content-header">
+        <div class="actions" style="display:flex; gap:12px; align-items:center;">
+          <a class="btn btn-primary" href="/employees/new">New Employee</a>
+          <form class="form" action="/employees" method="get" style="display:flex; gap:8px; align-items:center;">
+            <label>Org Unit
+              <select name="org_unit_id">
+                <option value="">All</option>
+                {% for u in org_units %}
+                  <option value="{{ u.id }}" {% if selected_org_unit == u.id %}selected{% endif %}>{{ u.name }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>Iqama Expiry
+              <select name="expiry">
+                <option value="" {% if not selected_expiry %}selected{% endif %}>Any</option>
+                <option value="expired" {% if selected_expiry == 'expired' %}selected{% endif %}>Expired</option>
+                <option value="soon" {% if selected_expiry == 'soon' %}selected{% endif %}>Soon (≤60d)</option>
+                <option value="ok" {% if selected_expiry == 'ok' %}selected{% endif %}>OK</option>
+              </select>
+            </label>
+            <button class="btn" type="submit">Apply</button>
+          </form>
+        </div>
+      </section>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Nationality</th>
+            <th>Hire Date</th>
+            <th>Base Salary</th>
+            <th>Total Compensation</th>
+            <th>Iqama Expiry</th>
+            <th>Passport Expiry</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in employees %}
+          <tr>
+            <td>{{ e.emp_id }}</td>
+            <td>{{ e.name }}</td>
+            <td>{{ e.nationality }}</td>
+            <td>{{ e.hire_date }}</td>
+            <td>{{ '%.2f'|format(e.base_salary or 0) }}</td>
+            <td>{{ '%.2f'|format((e.base_salary or 0) + (e.hra or ((e.base_salary or 0) * 0.25)) + (e.transport or ((e.base_salary or 0) * 0.10))) }}</td>
+            <td>
+              {{ e.iqama_expiry or '-' }}
+              {% if e._iqama_alert.status == 'expired' %}<span class="muted">(expired)</span>{% elif e._iqama_alert.status == 'soon' %}<span class="muted">(in {{ e._iqama_alert.days }}d)</span>{% endif %}
+            </td>
+            <td>
+              {{ e.passport_expiry or '-' }}
+              {% if e._passport_alert.status == 'expired' %}<span class="muted">(expired)</span>{% elif e._passport_alert.status == 'soon' %}<span class="muted">(in {{ e._passport_alert.days }}d)</span>{% endif %}
+            </td>
+            <td><a class="btn" href="/employees/{{ e.emp_id }}">Details</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="9" class="muted">No employees yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </main>
+
+    <footer class="footer">Employees • Directory</footer>
+  </body>
+</html>

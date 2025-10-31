@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Org Unit • Settings • Matr ERP</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/apps/settings">Settings</a> / <a href="/settings/org-units">Org Units</a> / Edit {{ unit.id }}</nav>
+    </header>
+
+    <main class="content">
+      <section class="content-header">
+        <h1>Edit Organization Unit</h1>
+      </section>
+
+      <section>
+        <form method="post" action="/settings/org-units/{{ unit.id }}/edit" class="form-grid">
+          <div>
+            <label for="name">Name</label>
+            <input id="name" name="name" type="text" value="{{ unit.name }}" required />
+          </div>
+          <div>
+            <label for="parent_id">Parent Unit</label>
+            <select id="parent_id" name="parent_id">
+              <option value="">(none)</option>
+              {% for u in org_units %}
+              {% if u.id != unit.id %}
+              <option value="{{ u.id }}" {% if unit.parent_id == u.id %}selected{% endif %}>{{ u.name }}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a class="btn" href="/settings/org-units">Cancel</a>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer">Settings • Organization</footer>
+  </body>
+  </html>

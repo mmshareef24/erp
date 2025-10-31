@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Purchases • New Order</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/purchases">Purchases</a> / <a href="/purchases/orders">Orders</a> / New</nav>
+    </header>
+
+    <main class="content">
+      <form class="form" action="/purchases/orders" method="post">
+        <div class="card">
+          <h2>Create Purchase Order</h2>
+          <div class="form-grid">
+            <label>Vendor
+              <input type="text" name="vendor" required />
+            </label>
+            <label>Status
+              <select name="status">
+                <option value="confirmed">Confirmed</option>
+                <option value="draft">Draft</option>
+              </select>
+            </label>
+          </div>
+
+          <h3>Items</h3>
+          <table class="table" id="items-table">
+            <thead>
+              <tr>
+                <th style="width:45%">Product</th>
+                <th style="width:15%">Qty</th>
+                <th style="width:20%">Unit Cost</th>
+                <th style="width:20%">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="text" name="product" required /></td>
+                <td><input type="number" name="quantity" step="0.01" min="0" required /></td>
+                <td><input type="number" name="unit_cost" step="0.01" min="0" required /></td>
+                <td><button type="button" class="btn" onclick="removeRow(this)">Remove</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="actions">
+            <button type="button" class="btn" onclick="addRow()">Add Item</button>
+          </div>
+
+          <div class="actions">
+            <a class="btn" href="/purchases/orders">Cancel</a>
+            <button class="btn btn-primary" type="submit">Create</button>
+          </div>
+        </div>
+      </form>
+    </main>
+
+    <script>
+      function addRow() {
+        const tbody = document.querySelector('#items-table tbody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><input type="text" name="product" required /></td>
+          <td><input type="number" name="quantity" step="0.01" min="0" required /></td>
+          <td><input type="number" name="unit_cost" step="0.01" min="0" required /></td>
+          <td><button type="button" class="btn" onclick="removeRow(this)">Remove</button></td>
+        `;
+        tbody.appendChild(tr);
+      }
+      function removeRow(btn) {
+        const tr = btn.closest('tr');
+        const tbody = document.querySelector('#items-table tbody');
+        if (tbody.rows.length > 1) tbody.removeChild(tr);
+      }
+    </script>
+
+    <footer class="footer">Purchases • New Order</footer>
+  </body>
+  </html>

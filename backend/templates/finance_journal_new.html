@@ -1,0 +1,67 @@
+{% extends "app.html" %}
+{% block title %}New Journal Entry{% endblock %}
+{% block content %}
+<h2>New Journal Entry</h2>
+<form method="post" action="/accounting/journals">
+  <div>
+    <label>Date</label>
+    <input type="date" name="date" required />
+  </div>
+  <div>
+    <label>Reference</label>
+    <input type="text" name="ref" value="MANUAL" />
+  </div>
+  <div>
+    <label>Memo</label>
+    <input type="text" name="memo" />
+  </div>
+
+  <h3>Line 1</h3>
+  <div>
+    <label>Account</label>
+    <select name="account1">
+      {% for a in chart %}
+      <option value="{{ a.code }}">{{ a.code }} - {{ a.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Debit</label>
+    <input type="number" step="0.01" name="debit1" value="0" />
+  </div>
+  <div>
+    <label>Credit</label>
+    <input type="number" step="0.01" name="credit1" value="0" />
+  </div>
+  <div>
+    <label>Line Memo</label>
+    <input type="text" name="memo1" />
+  </div>
+
+  <h3>Line 2</h3>
+  <div>
+    <label>Account</label>
+    <select name="account2">
+      {% for a in chart %}
+      <option value="{{ a.code }}">{{ a.code }} - {{ a.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Debit</label>
+    <input type="number" step="0.01" name="debit2" value="0" />
+  </div>
+  <div>
+    <label>Credit</label>
+    <input type="number" step="0.01" name="credit2" value="0" />
+  </div>
+  <div>
+    <label>Line Memo</label>
+    <input type="text" name="memo2" />
+  </div>
+
+  <div style="margin-top:12px;">
+    <button type="submit">Post Journal</button>
+  </div>
+</form>
+{% endblock %}

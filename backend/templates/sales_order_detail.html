@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sales • Order {{ order.id[:8] }}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/sales">Sales</a> / <a href="/sales/orders">Orders</a> / {{ order.id[:8] }}</nav>
+    </header>
+
+    <main class="content">
+      <section class="card">
+        <h2>Order {{ order.id }}</h2>
+        <p class="muted">Date: {{ order.date }} • Status: {{ order.status }}</p>
+        <p><strong>Customer:</strong> {{ order.customer }}</p>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Unit Price</th>
+              <th>Line Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in order.items %}
+            <tr>
+              <td>{{ item.product }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>${{ '%.2f'|format(item.unit_price) }}</td>
+              <td>${{ '%.2f'|format(item.quantity * item.unit_price) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" style="text-align:right"><strong>Total</strong></td>
+              <td><strong>${{ '%.2f'|format(order.total) }}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+        <div class="actions">
+          <form action="/sales/orders/{{ order.id }}/deliver" method="post"><button class="btn">Create Delivery Note</button></form>
+          <form action="/sales/orders/{{ order.id }}/invoice" method="post"><button class="btn btn-primary">Create Invoice</button></form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">Sales • Order</footer>
+  </body>
+  </html>

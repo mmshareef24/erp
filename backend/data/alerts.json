@@ -1,0 +1,18 @@
+[
+  {
+    "emp_id": "E001",
+    "name": "Ahmed Ali",
+    "type": "iqama",
+    "expiry": "",
+    "status": "unknown",
+    "days": null
+  },
+  {
+    "emp_id": "E001",
+    "name": "Ahmed Ali",
+    "type": "passport",
+    "expiry": "",
+    "status": "unknown",
+    "days": null
+  }
+]

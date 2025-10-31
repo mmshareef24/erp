@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Product • Matr ERP</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/catalogs/products">Products</a> / New</nav>
+    </header>
+
+    <main class="content">
+      <div class="card">
+        <h2>Create Product</h2>
+        <form method="post" action="/catalogs/products" class="form-grid">
+          <label>
+            Name
+            <input type="text" name="name" required />
+          </label>
+          <label>
+            Price
+            <input type="number" step="0.01" name="price" value="0.00" required />
+          </label>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Save</button>
+            <a class="btn" href="/catalogs/products">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <footer class="footer">Matr ERP • Products</footer>
+  </body>
+</html>

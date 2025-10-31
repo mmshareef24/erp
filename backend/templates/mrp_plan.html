@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MRP • Plan</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/mrp">MRP</a> / Plan</nav>
+    </header>
+
+    <main class="content">
+      <div class="actions">
+        <form action="/mrp/plan" method="get" style="display:inline-flex; gap:8px; align-items:center">
+          <label>Warehouse
+            <input type="text" name="warehouse" value="{{ selected_warehouse }}" placeholder="Main" />
+          </label>
+          <label>Location
+            <input type="text" name="location" value="{{ selected_location }}" placeholder="" />
+          </label>
+          <label>Start
+            <input type="date" name="start_date" value="{{ selected_start_date }}" />
+          </label>
+          <label>End
+            <input type="date" name="end_date" value="{{ selected_end_date }}" />
+          </label>
+          <button class="btn" type="submit">Recompute</button>
+        </form>
+        <span class="divider"></span>
+        <form action="/mrp/execute" method="post" style="display:inline-flex; gap:8px; align-items:center">
+          <input type="hidden" name="warehouse" value="{{ selected_warehouse or 'Main' }}" />
+          <input type="hidden" name="location" value="{{ selected_location or '' }}" />
+          <label><input type="checkbox" name="create_wos" /> Create WOs</label>
+          <label><input type="checkbox" name="create_pos" /> Create POs</label>
+          <button class="btn btn-primary" type="submit">Execute Suggestions</button>
+        </form>
+      </div>
+
+      {% if request.query_params.get('notice') %}
+      <p class="muted">Notice: {{ request.query_params.get('notice') }}</p>
+      {% endif %}
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Demand</th>
+            <th>On Hand</th>
+            <th>Incoming PO</th>
+            <th>Planned WO</th>
+            <th>Suggest Make</th>
+            <th>Suggest Buy</th>
+            <th>Need By</th>
+            <th>Plan Start</th>
+            <th>Order By</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td>{{ r.product }}</td>
+            <td>{{ r.demand }}</td>
+            <td>{{ r.onhand }}</td>
+            <td>{{ r.incoming_po }}</td>
+            <td>{{ r.planned_wo }}</td>
+            <td>{{ r.suggest_make }}</td>
+            <td>{{ r.suggest_buy }}</td>
+            <td>{{ r.need_by }}</td>
+            <td>{{ r.plan_start }}</td>
+            <td>{{ r.order_by }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="muted">No data in selected horizon.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </main>
+
+    <footer class="footer">MRP • Plan</footer>
+  </body>
+</html>

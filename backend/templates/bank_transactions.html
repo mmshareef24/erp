@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Banking • Transactions</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/banking/accounts">Banking</a> / Transactions</nav>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <h3 class="section-title">Banking</h3>
+        <div class="nav">
+          <a href="/banking/accounts">Accounts</a>
+          <a href="/banking/transactions">Transactions</a>
+          <a href="/banking/reconcile">Reconcile</a>
+        </div>
+      </aside>
+      <main class="content">
+        <div class="actions">
+          <a class="btn btn-primary" href="/banking/transactions/new">New Transaction</a>
+          <a class="btn" href="/banking/reconcile">Reconcile</a>
+        </div>
+      <form class="form" action="/banking/transactions" method="get" style="margin-bottom: 1rem;">
+        <label>Account
+          <select name="account_id">
+            <option value="">All</option>
+            {% for a in accounts %}
+            <option value="{{ a.id }}" {% if selected_account==a.id %}selected{% endif %}>{{ a.name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button class="btn" type="submit">Filter</button>
+      </form>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Account</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Memo</th>
+            <th>Reconciled</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in transactions %}
+          <tr>
+            <td>{{ t.date }}</td>
+            <td>{{ (accounts | selectattr('id', 'equalto', t.account_id) | list | first).name if accounts else t.account_id }}</td>
+            <td>{{ t.type }}</td>
+            <td>${{ '%.2f'|format(t.amount) }}</td>
+            <td>{{ t.memo or '-' }}</td>
+            <td>
+              {% if t.reconciled_ref %}
+                <span class="label success">Yes</span>
+              {% else %}
+                <span class="label">No</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="muted">No transactions yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </main>
+    </div>
+
+    <footer class="footer">Banking • Transactions</footer>
+  </body>
+</html>

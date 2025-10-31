@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Position • Settings • Matr ERP</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/apps/settings">Settings</a> / <a href="/settings/positions">Positions</a> / New</nav>
+    </header>
+
+    <main class="content">
+      <section class="content-header">
+        <h1>New Position</h1>
+      </section>
+
+      <section>
+        <form method="post" action="/settings/positions" class="form-grid">
+          <div>
+            <label for="title">Title</label>
+            <input id="title" name="title" type="text" required />
+          </div>
+          <div>
+            <label for="org_unit_id">Organization Unit</label>
+            <select id="org_unit_id" name="org_unit_id">
+              <option value="">(none)</option>
+              {% for u in org_units %}
+              <option value="{{ u.id }}">{{ u.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Create Position</button>
+            <a class="btn" href="/settings/positions">Cancel</a>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer">Settings • Positions</footer>
+  </body>
+  </html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory • New Transfer</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/inventory">Inventory</a> / <a href="/inventory/transfers">Transfers</a> / New</nav>
+    </header>
+
+    <main class="content">
+      <form class="form" action="/inventory/transfers" method="post">
+        <div class="card">
+          <h2>New Stock Transfer</h2>
+          <div class="form-grid">
+            <label>Product
+              <select name="product" required>
+                {% if products %}
+                  {% for p in products %}
+                  <option value="{{ p.name }}">{{ p.name }}</option>
+                  {% endfor %}
+                {% else %}
+                  <option value="">-- Enter manually below --</option>
+                {% endif %}
+              </select>
+            </label>
+            {% if not products %}
+            <label>Product (manual)
+              <input type="text" name="product" />
+            </label>
+            {% endif %}
+            <label>Quantity
+              <input type="number" name="quantity" step="0.01" min="0" required />
+            </label>
+            <label>From Warehouse
+              <select name="from_warehouse">
+                <option value="Main">Main</option>
+                {% for w in warehouses %}
+                <option value="{{ w.name }}">{{ w.name }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>From Location
+              <select name="from_location">
+                <option value="">(None)</option>
+                {% for l in locations %}
+                <option value="{{ l.name }}">{{ l.name }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>To Warehouse
+              <select name="to_warehouse">
+                <option value="Main">Main</option>
+                {% for w in warehouses %}
+                <option value="{{ w.name }}">{{ w.name }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>To Location
+              <select name="to_location">
+                <option value="">(None)</option>
+                {% for l in locations %}
+                <option value="{{ l.name }}">{{ l.name }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>Memo
+              <input type="text" name="memo" placeholder="Optional note" />
+            </label>
+          </div>
+          <div class="actions">
+            <a class="btn" href="/inventory/transfers">Cancel</a>
+            <button class="btn btn-primary" type="submit">Save</button>
+          </div>
+        </div>
+      </form>
+    </main>
+
+    <footer class="footer">Inventory • New Transfer</footer>
+  </body>
+</html>

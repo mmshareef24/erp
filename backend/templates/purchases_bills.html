@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Purchases • Bills</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/purchases">Purchases</a> / Bills</nav>
+    </header>
+
+    <main class="content">
+      <div class="layout-with-sidebar">
+        <aside class="sidebar">
+          <nav class="submodule-nav">
+            <a href="/purchases/orders">Orders</a>
+            <a class="active" href="/purchases/bills">Bills</a>
+          </nav>
+        </aside>
+        <section>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Vendor</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in bills %}
+              <tr>
+                <td><a href="/purchases/bills/{{ b.id }}">{{ b.id[:8] }}</a></td>
+                <td>{{ b.vendor }}</td>
+                <td>{{ b.date }}</td>
+                <td>{{ b.status }}</td>
+                <td>${{ '%.2f'|format(b.total) }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5" class="muted">No bills yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">Purchases • Bills</footer>
+  </body>
+  </html>

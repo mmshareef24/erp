@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory • Items</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/inventory">Inventory</a> / Items</nav>
+    </header>
+
+  <main class="content">
+      <div class="actions">
+        <a class="btn" href="/inventory/moves">Moves</a>
+        <a class="btn" href="/inventory/receive">Receive</a>
+        <a class="btn" href="/inventory/issue">Issue</a>
+        <span class="divider"></span>
+        <a class="btn" href="/production/work_orders">Production Work Orders</a>
+        <a class="btn" href="/production/boms">Production BOMs</a>
+        <span class="divider"></span>
+        <form action="/inventory/items" method="get" style="display:inline-flex; gap:8px; align-items:center">
+          <label>Warehouse
+            <select name="warehouse">
+              <option value="">(All)</option>
+              <option value="Main" {% if selected_warehouse=='Main' %}selected{% endif %}>Main</option>
+              {% for w in warehouses %}
+              <option value="{{ w.name }}" {% if selected_warehouse==w.name %}selected{% endif %}>{{ w.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>Location
+            <select name="location">
+              <option value="">(All)</option>
+              {% for l in locations %}
+              <option value="{{ l.name }}" {% if selected_location==l.name %}selected{% endif %}>{{ l.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <button class="btn" type="submit">Apply</button>
+        </form>
+      </div>
+      {% if selected_warehouse or selected_location %}
+      <p class="muted">Filtered by warehouse: <strong>{{ selected_warehouse or 'All' }}</strong>, location: <strong>{{ selected_location or 'All' }}</strong>.</p>
+      {% endif %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>On Hand</th>
+            <th>Avg Cost</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for it in items %}
+          <tr>
+            <td>{{ it.product }}</td>
+            <td>{{ it.qty }}</td>
+            <td>${{ '%.2f'|format(it.avg_cost) }}</td>
+            <td>${{ '%.2f'|format(it.value) }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="muted">No stock yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </main>
+
+    <footer class="footer">Inventory • Items</footer>
+  </body>
+</html>

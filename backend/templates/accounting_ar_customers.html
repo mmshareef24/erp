@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accounting • AR Customers</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matr ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/accounting">Accounting</a> / AR Customers</nav>
+    </header>
+
+    <main class="content">
+      <div class="toolbar">
+        <h1>AR by Customer</h1>
+      </div>
+      {% if customers %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Country</th>
+            <th>AR Account</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in customers %}
+          <tr>
+            <td>{{ c.name }}</td>
+            <td>{{ c.country }}</td>
+            <td>{{ c.ar_account }}</td>
+            <td>${{ '%.2f'|format(c.balance) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="muted">No customers found.</p>
+      {% endif %}
+    </main>
+
+    <footer class="footer">Accounting • AR Customers</footer>
+  </body>
+</html>
