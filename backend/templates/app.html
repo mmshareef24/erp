@@ -12,8 +12,23 @@
           <img src="/static/logo.svg" alt="Matrix ERP" class="brand-logo" />
         </div>
       <nav class="breadcrumbs"><a href="/">Apps</a> / {{ app_item.name }}</nav>
-    </header>
-
+  </header>
+    <div class="layout">
+      <aside class="main-nav">
+        <div class="section-title">Menu</div>
+        <nav class="nav">
+          <a href="/"><span class="icon">🏠</span><span class="label">Dashboard</span></a>
+          <a href="/catalogs/customers"><span class="icon">👤</span><span class="label">Customer</span></a>
+          <a href="/employees"><span class="icon">👥</span><span class="label">People</span></a>
+          <a href="/settings/company"><span class="icon">🏢</span><span class="label">Company</span></a>
+          <a href="/sales/orders"><span class="icon">📦</span><span class="label">Offer</span></a>
+          <a href="/sales/invoices"><span class="icon">🧾</span><span class="label">Invoice</span></a>
+          <a href="/sales/quotes"><span class="icon">📝</span><span class="label">Quote</span></a>
+          <a href="/banking/reconcile"><span class="icon">💳</span><span class="label">Payment</span></a>
+          <a href="/app/accounting"><span class="icon">🧮</span><span class="label">Admin</span></a>
+          <a href="/app/settings"><span class="icon">⚙️</span><span class="label">Settings</span></a>
+        </nav>
+      </aside>
     <main class="content">
       <section class="app-header" style="--tile-color: {{ app_item.color }}">
         <div class="app-icon">{{ app_item.icon }}</div>
@@ -113,6 +128,7 @@
         {% endif %}
       </section>
     </main>
+    </div>
 
     <footer class="footer">Matrix ERP • Module placeholder</footer>
   </body>

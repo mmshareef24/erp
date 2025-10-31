@@ -18,20 +18,20 @@
     {% set logged_in = request.cookies.get('session_user') %}
     {% if logged_in %}
     <div class="layout">
-      <aside class="sidebar">
-        <h3 class="section-title">Navigation</h3>
-        <div class="nav">
-          <a href="/app/sales">Sales</a>
-          <a href="/app/purchases">Purchases</a>
-          <a href="/app/accounting">Accounting</a>
-          <a href="/app/inventory">Inventory</a>
-          <a href="/app/banking">Banking</a>
-          <a href="/app/production">Production</a>
-          <a href="/app/mrp">MRP</a>
-          <a href="/app/employees">Employees</a>
-          <a href="/app/time">Time</a>
-          <a href="/app/settings">Settings</a>
-        </div>
+      <aside class="main-nav">
+        <div class="section-title">Menu</div>
+        <nav class="nav">
+          <a href="/"><span class="icon">🏠</span><span class="label">Dashboard</span></a>
+          <a href="/catalogs/customers"><span class="icon">👤</span><span class="label">Customer</span></a>
+          <a href="/employees"><span class="icon">👥</span><span class="label">People</span></a>
+          <a href="/settings/company"><span class="icon">🏢</span><span class="label">Company</span></a>
+          <a href="/sales/orders"><span class="icon">📦</span><span class="label">Offer</span></a>
+          <a href="/sales/invoices"><span class="icon">🧾</span><span class="label">Invoice</span></a>
+          <a href="/sales/quotes"><span class="icon">📝</span><span class="label">Quote</span></a>
+          <a href="/banking/reconcile"><span class="icon">💳</span><span class="label">Payment</span></a>
+          <a href="/app/accounting"><span class="icon">🧮</span><span class="label">Admin</span></a>
+          <a href="/app/settings"><span class="icon">⚙️</span><span class="label">Settings</span></a>
+        </nav>
       </aside>
       <main class="content">
         <div class="apps-grid">
