@@ -1,5 +1,13 @@
 # Vercel Serverless Function entrypoint for FastAPI (ASGI)
-# This exposes the FastAPI app from backend.main so Vercel can run it as a single function.
+# Ensures repository root is on sys.path so `backend.main` is importable in Vercel.
+
+import os
+import sys
+
+# Add repo root to import path (one level above /api)
+ROOT = os.path.dirname(os.path.dirname(__file__))
+if ROOT not in sys.path:
+    sys.path.append(ROOT)
 
 from backend.main import app as fastapi_app
 
