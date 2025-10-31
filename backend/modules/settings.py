@@ -326,7 +326,7 @@ def load_company() -> dict:
         data = {}
     # Defaults suitable for ZATCA Phase 1 testing
     if not data.get("name"):
-    data["name"] = "Matrix ERP Demo Co"
+        data["name"] = "Matrix ERP Demo Co"
     if not data.get("vat_number"):
         data["vat_number"] = "310000000000000"
     if not data.get("country_code"):
