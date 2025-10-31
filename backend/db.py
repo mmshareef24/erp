@@ -4,9 +4,18 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, 
 from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime
 import hashlib
+import os
 
 
-DB_URL = "sqlite:///backend/data/app.db"
+# Choose DB URL based on environment.
+# - Local/dev: sqlite file under backend/data
+# - Vercel serverless: use /tmp which is writable (ephemeral)
+# - Respect DATABASE_URL if provided
+DEFAULT_DB_URL = "sqlite:///backend/data/app.db"
+VERCEL_DB_URL = "sqlite:////tmp/app.db"
+DB_URL = os.environ.get("DATABASE_URL") or (
+    VERCEL_DB_URL if os.environ.get("VERCEL") else DEFAULT_DB_URL
+)
 engine = create_engine(DB_URL, echo=False, future=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
