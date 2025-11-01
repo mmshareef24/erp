@@ -9,21 +9,22 @@
   <body>
     <header class="topbar">
       <div class="brand">Matrix ERP</div>
-      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/sales">Sales</a> / Quotes</nav>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/mail">Mail</a> / Quotes</nav>
     </header>
 
     <main class="content">
       <div class="layout-with-sidebar">
         <aside class="sidebar">
           <nav class="submodule-nav">
-            <a href="/sales/orders">Orders</a>
-            <a class="active" href="/sales/quotes">Quotes</a>
-            <a href="/sales/invoices">Invoices</a>
+            <a href="/mail/orders">Orders {% if orders_open_count > 0 %}<span class="nav-badge">{{ orders_open_count }}</span>{% endif %}</a>
+            <a class="active" href="/mail/quotes">Quotes</a>
+            <a href="/mail/invoices">Invoices {% if invoices_open_count > 0 %}<span class="nav-badge">{{ invoices_open_count }}</span>{% endif %}</a>
+            <a href="/mail/leads">Leads {% if lead_count > 0 %}<span class="nav-badge">{{ lead_count }}</span>{% endif %}</a>
           </nav>
         </aside>
         <section>
           <div class="toolbar">
-            <a class="btn btn-primary" href="/sales/quotes/new">New Quote</a>
+            <a class="btn btn-primary" href="/mail/quotes/new">New Quote</a>
           </div>
 
           <table class="table">
@@ -39,7 +40,7 @@
             <tbody>
               {% for q in quotes %}
               <tr>
-                <td><a href="/sales/quotes/{{ q.id }}">{{ q.id[:8] }}</a></td>
+                <td><a href="/mail/quotes/{{ q.id }}">{{ q.id[:8] }}</a></td>
                 <td>{{ q.customer }}</td>
                 <td>{{ q.date }}</td>
                 <td>{{ q.status }}</td>
@@ -56,6 +57,6 @@
       </div>
     </main>
 
-    <footer class="footer">Sales • Quotes</footer>
+    <footer class="footer">Mail • Quotes</footer>
   </body>
   </html>

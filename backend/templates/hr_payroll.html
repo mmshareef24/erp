@@ -1,0 +1,52 @@
+{% extends "app.html" %}
+{% block title %}Human Resources • Payroll{% endblock %}
+{% block content %}
+<section style="padding: 1rem;">
+  <h2><i class="fa-solid fa-money-check"></i> Payroll</h2>
+  <p class="muted">Salary processing, bonuses, and deductions.</p>
+  {% block actions %}
+  <div class="actions">
+    <a class="btn btn-primary" href="/hr/payroll/run">Run Payroll</a>
+    <a class="btn" href="/hr/payroll#bonus">Add Bonus</a>
+    <a class="btn" href="/hr/payroll#deduction">Record Deduction</a>
+  </div>
+  {% endblock %}
+  {% if request.query_params.get('run') == 'ok' %}
+  <section class="card" style="margin-top: 12px;">
+    <div class="card-header">Status</div>
+    <div class="card-body">
+      <p style="color: #0a7a26;">Payroll run submitted for
+        <strong>{{ request.query_params.get('period') or 'selected period' }}</strong>.
+      </p>
+    </div>
+  </section>
+  {% endif %}
+  {% if recent_runs and recent_runs|length > 0 %}
+  <section class="card" style="margin-top: 12px;">
+    <div class="card-header">Recent Payroll Runs</div>
+    <div class="card-body">
+      <ul>
+        {% for r in recent_runs %}
+        <li>
+          <strong>{{ r.period or '-' }}</strong>
+          — bonuses: {{ r.bonuses or 'no' }}, deductions: {{ r.deductions or 'no' }}
+          <span class="muted">(at {{ r.created_at or '-' }})</span>
+        </li>
+        {% endfor %}
+      </ul>
+      <a class="btn" href="/hr/payroll/runs">View all runs</a>
+    </div>
+  </section>
+  {% endif %}
+  <section class="card">
+    <div class="card-header">Summary</div>
+    <div class="card-body">
+      <ul>
+        <li>Upcoming payroll cycles</li>
+        <li>Pending approvals</li>
+        <li>Recent payouts</li>
+      </ul>
+    </div>
+  </section>
+</section>
+{% endblock %}

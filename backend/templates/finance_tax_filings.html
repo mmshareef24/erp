@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accounting • Tax Filings</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/accounting">Accounting</a> / <a href="/accounting/tax">Tax</a> / Filings</nav>
+    </header>
+
+    <main class="content">
+      <div class="actions">
+        <a class="btn btn-primary" href="/accounting/tax/filings/new">New Filing</a>
+        <a class="btn" href="/accounting/tax">Back to Tax</a>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Period</th>
+            <th>Ref</th>
+            <th>Status</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in filings %}
+          <tr>
+            <td>{{ f.id }}</td>
+            <td>{{ f.type|upper }}</td>
+            <td>{{ f.period }}</td>
+            <td>{{ f.ref or '-' }}</td>
+            <td>{{ f.status }}</td>
+            <td>{{ f.created_at }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="muted">No filings recorded.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </main>
+
+    <footer class="footer">Accounting • Tax Filings</footer>
+  </body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chart • Matrix ERP</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+        <div class="brand">
+          <img src="/static/logo.svg" alt="Matrix ERP" class="brand-logo" />
+        </div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / Chart</nav>
+  </header>
+    <div class="layout">
+      <aside class="main-nav">
+        <div class="section-title">Menu</div>
+        <nav class="nav">
+          <a href="/" class="{% if request.url.path == '/' %}active{% endif %}"><span class="label">Dashboard</span></a>
+          <a href="/catalogs/customers" class="{% if request.url.path.startswith('/catalogs/customers') %}active{% endif %}"><span class="label">Customer</span></a>
+          <a href="/employees" class="{% if request.url.path.startswith('/employees') %}active{% endif %}"><span class="label">People</span></a>
+          <a href="/settings/company" class="{% if request.url.path.startswith('/settings/company') %}active{% endif %}"><span class="label">Company</span></a>
+          <details class="nav-submenu">
+            <summary class="{% if request.url.path.startswith('/mail') %}active{% endif %}">Mail</summary>
+            <div class="submenu">
+              <a href="/mail/quotes" class="{% if request.url.path.startswith('/mail/quotes') %}active{% endif %}">Quotes</a>
+              <a href="/mail/orders" class="{% if request.url.path.startswith('/mail/orders') %}active{% endif %}">Orders</a>
+              <a href="/mail/invoices" class="{% if request.url.path.startswith('/mail/invoices') %}active{% endif %}">Invoices</a>
+            </div>
+          </details>
+          <details class="nav-submenu">
+            <summary class="{% if request.url.path.startswith('/purchases') %}active{% endif %}">Purchases</summary>
+            <div class="submenu">
+              <a href="/purchases/orders" class="{% if request.url.path.startswith('/purchases/orders') %}active{% endif %}">Orders</a>
+              <a href="/purchases/bills" class="{% if request.url.path.startswith('/purchases/bills') %}active{% endif %}">Bills</a>
+            </div>
+          </details>
+          <details class="nav-submenu">
+            <summary class="{% if request.url.path.startswith('/accounting') or request.url.path.startswith('/purchases/payments') %}active{% endif %}">Accounting</summary>
+            <div class="submenu">
+              <a href="/accounting/ar" class="{% if request.url.path.startswith('/accounting/ar') %}active{% endif %}">AR Ledger</a>
+              <a href="/purchases/bills" class="{% if request.url.path.startswith('/purchases/bills') %}active{% endif %}">Vendor Bills</a>
+              <a href="/purchases/payments" class="{% if request.url.path.startswith('/purchases/payments') %}active{% endif %}">Payments</a>
+              <a href="/accounting/coa" class="{% if request.url.path.startswith('/accounting/coa') %}active{% endif %}">Chart of Accounts</a>
+              <a href="/accounting/journals" class="{% if request.url.path.startswith('/accounting/journals') %}active{% endif %}">Journals</a>
+              <a href="/accounting/trial-balance" class="{% if request.url.path.startswith('/accounting/trial-balance') %}active{% endif %}">Trial Balance</a>
+              <a href="/accounting/pl" class="{% if request.url.path.startswith('/accounting/pl') %}active{% endif %}">Profit &amp; Loss</a>
+              <a href="/accounting/balance-sheet" class="{% if request.url.path.startswith('/accounting/balance-sheet') %}active{% endif %}">Balance Sheet</a>
+            </div>
+          </details>
+          <a href="/app/settings" class="{% if request.url.path.startswith('/app/settings') %}active{% endif %}"><span class="label">Settings</span></a>
+        </nav>
+      </aside>
+    <main class="content">
+      <section class="app-header" style="--tile-color: #3B82F6">
+        <div>
+          <h1 class="app-title">Chart</h1>
+          <p class="app-desc">Analytics and reporting</p>
+        </div>
+      </section>
+
+      <section class="dashboard-widgets">
+        <div class="widgets-toolbar">
+          <h2 class="widgets-title">Analytics Dashboard</h2>
+          <div class="widgets-actions">
+            <label>From <input type="date" id="filterFrom" /></label>
+            <label>To <input type="date" id="filterTo" /></label>
+            <button class="btn" id="btnRefresh">Refresh</button>
+            <button class="btn" id="btnCustomize">Customize</button>
+          </div>
+        </div>
+        <div id="widgetsGrid" class="widgets-grid"></div>
+      </section>
+    </main>
+    </div>
+
+    <footer class="footer">Matrix ERP • Chart Module</footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+      const DEFAULT_WIDGETS = [
+        { key: 'sales_invoices_monthly', type: 'line', title: 'Sales Invoices • Monthly Total' },
+        { key: 'sales_orders_status', type: 'bar', title: 'Sales Orders • Status' },
+        { key: 'purchases_bills_status', type: 'pie', title: 'Purchases Bills • Status' },
+      ];
+
+      function getWidgets() {
+        try {
+          const raw = localStorage.getItem('dashboardWidgets');
+          if (!raw) return DEFAULT_WIDGETS;
+          const arr = JSON.parse(raw);
+          if (Array.isArray(arr) && arr.length > 0) return arr;
+          return DEFAULT_WIDGETS;
+        } catch { return DEFAULT_WIDGETS; }
+      }
+
+      function saveWidgets(widgets) {
+        localStorage.setItem('dashboardWidgets', JSON.stringify(widgets));
+      }
+
+      async function renderWidget(widget) {
+        const container = document.getElementById('widgetsGrid');
+        const div = document.createElement('div');
+        div.className = 'widget-card';
+        div.innerHTML = `
+          <div class="widget-header">
+            <h3>${widget.title}</h3>
+            <button class="widget-remove" data-key="${widget.key}">×</button>
+          </div>
+          <canvas class="widget-chart"></canvas>
+        `;
+        container.appendChild(div);
+
+        const canvas = div.querySelector('.widget-chart');
+        const ctx = canvas.getContext('2d');
+        
+        // Fetch data from API
+        let data = {};
+        try {
+          const from = document.getElementById('filterFrom').value || '';
+          const to = document.getElementById('filterTo').value || '';
+          const qs = new URLSearchParams();
+          if (from) qs.set('from_date', from);
+          if (to) qs.set('to_date', to);
+          const url = qs.toString() ? `/api/dashboard/data?${qs.toString()}` : '/api/dashboard/data';
+          const response = await fetch(url);
+          data = await response.json();
+        } catch (error) {
+          console.error('Failed to fetch dashboard data:', error);
+        }
+
+        let config = {};
+        if (widget.key === 'sales_invoices_monthly') {
+          const points = data.sales_invoices_monthly || [];
+          config = {
+            type: widget.type || 'line',
+            data: {
+              labels: points.map(p => p.month),
+              datasets: [{ label: 'Total', data: points.map(p => p.total), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.2)' }]
+            }, options: { responsive: true, maintainAspectRatio: false }
+          };
+        } else if (widget.key === 'sales_orders_status') {
+          const st = data.sales_orders_status || {};
+          config = {
+            type: widget.type || 'bar',
+            data: {
+              labels: Object.keys(st),
+              datasets: [{ label: 'Count', data: Object.values(st), backgroundColor: ['#34d399','#60a5fa','#f59e0b'] }]
+            }, options: { responsive: true, maintainAspectRatio: false }
+          };
+        } else if (widget.key === 'purchases_bills_status') {
+          const st = data.purchases_bills_status || {};
+          config = {
+            type: widget.type || 'pie',
+            data: {
+              labels: Object.keys(st),
+              datasets: [{ label: 'Count', data: Object.values(st), backgroundColor: ['#ef4444','#10b981'] }]
+            }, options: { responsive: true, maintainAspectRatio: false }
+          };
+        }
+        
+        canvas.style.height = '220px';
+        new Chart(ctx, config);
+      }
+
+      async function loadAndRender() {
+        const container = document.getElementById('widgetsGrid');
+        container.innerHTML = '';
+        const widgets = getWidgets();
+        for (const widget of widgets) {
+          await renderWidget(widget);
+        }
+      }
+
+      // Initialize filters from localStorage
+      (function initFilters() {
+        try {
+          const fromSaved = localStorage.getItem('dashboardFrom') || '';
+          const toSaved = localStorage.getItem('dashboardTo') || '';
+          const fromEl = document.getElementById('filterFrom');
+          const toEl = document.getElementById('filterTo');
+          if (fromSaved) fromEl.value = fromSaved;
+          if (toSaved) toEl.value = toSaved;
+        } catch {}
+      })();
+
+      document.getElementById('btnRefresh').addEventListener('click', () => {
+        try {
+          const from = document.getElementById('filterFrom').value || '';
+          const to = document.getElementById('filterTo').value || '';
+          localStorage.setItem('dashboardFrom', from);
+          localStorage.setItem('dashboardTo', to);
+        } catch {}
+        loadAndRender();
+      });
+      
+      loadAndRender();
+    </script>
+  </body>
+</html>

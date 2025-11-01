@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sales • Payment {{ payment.id[:8] }}</title>
+    <title>Mail • Payment {{ payment.id[:8] }}</title>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
     <header class="topbar">
  <div class="brand">Matrix ERP</div>
-      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/sales">Sales</a> / Payment {{ payment.id[:8] }}</nav>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/mail">Mail</a> / Payment {{ payment.id[:8] }}</nav>
     </header>
 
     <main class="content">
@@ -26,12 +26,12 @@
           {% endif %}
         </div>
         <div class="actions">
-          <a class="btn" href="/sales/invoices">Back to Invoices</a>
-          <a class="btn" href="/sales/orders">Orders</a>
+          <a class="btn" href="/mail/invoices">Back to Invoices</a>
+          <a class="btn" href="/mail/orders">Orders</a>
         </div>
       </div>
     </main>
 
-    <footer class="footer">Sales • Payment</footer>
+    <footer class="footer">Mail • Payment</footer>
   </body>
   </html>

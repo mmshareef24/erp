@@ -1,0 +1,33 @@
+{% extends "app.html" %}
+{% block title %}Human Resources • Jobs{% endblock %}
+{% block actions %}
+<div class="actions">
+  <a class="btn btn-primary" href="/hr/recruitment/new">Create Job</a>
+  <a class="btn" href="/hr/recruitment">Back to Recruitment</a>
+</div>
+{% endblock %}
+{% block content %}
+<section style="padding: 1rem;">
+  <h2><i class="fa-solid fa-briefcase"></i> Jobs</h2>
+  <p class="muted">Recently created job postings.</p>
+
+  {% if jobs and jobs|length > 0 %}
+  <section class="card">
+    <div class="card-header">Open Roles</div>
+    <div class="card-body">
+      <ul>
+        {% for j in jobs %}
+        <li>
+          <a href="/hr/jobs/{% if j.id %}id/{{ j.id }}{% else %}{{ loop.index0 }}{% endif %}"><strong>{{ j.title or '-' }}</strong></a>
+          — {{ j.department or '-' }}, {{ j.location or '-' }}
+          <span class="muted">({{ j.status or 'open' }} at {{ j.created_at or '-' }})</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+  {% else %}
+  <p class="muted">No jobs yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

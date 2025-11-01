@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "0dec3778-1b57-48e8-9c1c-d589fdfec81f",
+    "product": "Widget A",
+    "components": [
+      {
+        "product": "Widget A Component",
+        "quantity": 2.0
+      },
+      {
+        "product": "Screw",
+        "quantity": 4.0
+      }
+    ]
+  }
+]

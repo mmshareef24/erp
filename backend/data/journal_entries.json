@@ -24,5 +24,45 @@
       }
     ],
     "posted_at": "2025-10-30T20:44:42.012083"
+  },
+  {
+    "date": "2025-11-01",
+    "ref": "DEL-9e5f0c12-9a1d-4c4d-9e29-555555555555",
+    "memo": "Delivery 9e5f0c12-9a1d-4c4d-9e29-555555555555 to Acme",
+    "lines": [
+      {
+        "account_code": "5000",
+        "debit": 15.0,
+        "credit": 0.0,
+        "memo": "COGS from delivery"
+      },
+      {
+        "account_code": "1200",
+        "debit": 0.0,
+        "credit": 15.0,
+        "memo": "Inventory reduction"
+      }
+    ],
+    "posted_at": "2025-11-01T12:46:15Z"
+  },
+  {
+    "date": "2025-11-01T07:54:27Z",
+    "ref": "DEL-ab037ccb-430f-40c1-90ed-65a72053f71f",
+    "memo": "Delivery ab037ccb-430f-40c1-90ed-65a72053f71f to Acme",
+    "lines": [
+      {
+        "account_code": "5000",
+        "debit": 15.0,
+        "credit": 0.0,
+        "memo": "COGS from delivery"
+      },
+      {
+        "account_code": "1200",
+        "debit": 0.0,
+        "credit": 15.0,
+        "memo": "Inventory reduction"
+      }
+    ],
+    "posted_at": "2025-11-01T07:54:27.430538"
   }
 ]

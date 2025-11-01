@@ -11,9 +11,9 @@ from starlette.responses import RedirectResponse
 from .inventory import record_sales_delivery
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import BaseModel
-from ..db import SessionLocal, Customer
+from ..db import SessionLocal, Customer, default_vat_rate
 from .accounting import append_ar_entry
-from .finance import post_invoice_to_gl, post_payment_to_gl
+from .finance import post_invoice_to_gl, post_payment_to_gl, post_delivery_to_gl
 
 
 # Jinja environment for Sales templates (reuses global templates folder)
@@ -151,19 +151,54 @@ def save_payments(payments: list[Payment]) -> None:
     )
 
 
-router = APIRouter(prefix="/sales", tags=["Sales"])
+router = APIRouter(prefix="/mail", tags=["Mail"])
 
 
 @router.get("/", response_class=HTMLResponse)
 async def sales_home():
-    return RedirectResponse(url="/sales/quotes", status_code=303)
+    return RedirectResponse(url="/mail/quotes", status_code=303)
 
 
 @router.get("/quotes", response_class=HTMLResponse)
 async def quotes_list(request: Request):
     quotes = load_quotes()
+    lead_count = sum(1 for q in quotes if q.status in {"draft", "sent"})
+    orders_open_count = sum(1 for o in load_orders() if o.status == "confirmed")
+    invoices_open_count = sum(1 for i in load_invoices() if i.status == "open")
     template = templates_env.get_template("sales_quotes.html")
-    return HTMLResponse(template.render(request=request, quotes=quotes))
+    return HTMLResponse(template.render(
+        request=request,
+        quotes=quotes,
+        lead_count=lead_count,
+        orders_open_count=orders_open_count,
+        invoices_open_count=invoices_open_count,
+    ))
+
+# Leads as pre-opportunities derived from quotes not yet accepted
+@router.get("/leads", response_class=HTMLResponse)
+async def leads_list(request: Request):
+    quotes = load_quotes()
+    lead_statuses = {"draft", "sent"}
+    # Optional filter via query parameter: status=draft|sent|all
+    status = request.query_params.get("status")
+    # base leads set (only draft/sent)
+    base_leads = [q for q in quotes if q.status in lead_statuses]
+    if status in lead_statuses:
+        leads = [q for q in base_leads if q.status == status]
+    else:
+        # default or status=all: show all lead statuses
+        leads = base_leads
+    template = templates_env.get_template("sales_leads.html")
+    lead_count = len(base_leads)
+    orders_open_count = sum(1 for o in load_orders() if o.status == "confirmed")
+    invoices_open_count = sum(1 for i in load_invoices() if i.status == "open")
+    return HTMLResponse(template.render(
+        request=request,
+        leads=leads,
+        lead_count=lead_count,
+        orders_open_count=orders_open_count,
+        invoices_open_count=invoices_open_count,
+    ))
 
 
 @router.get("/quotes/new", response_class=HTMLResponse)
@@ -172,7 +207,16 @@ async def quotes_new_form(request: Request):
     with SessionLocal() as db:
         customers = db.query(Customer).order_by(Customer.name.asc()).all()
     template = templates_env.get_template("sales_quote_new.html")
-    return HTMLResponse(template.render(request=request, customers=customers))
+    lead_count = sum(1 for q in load_quotes() if q.status in {"draft", "sent"})
+    orders_open_count = sum(1 for o in load_orders() if o.status == "confirmed")
+    invoices_open_count = sum(1 for i in load_invoices() if i.status == "open")
+    return HTMLResponse(template.render(
+        request=request,
+        customers=customers,
+        lead_count=lead_count,
+        orders_open_count=orders_open_count,
+        invoices_open_count=invoices_open_count,
+    ))
 
 
 @router.post("/quotes")
@@ -198,7 +242,7 @@ async def quotes_create(
     quotes = load_quotes()
     quotes.append(q)
     save_quotes(quotes)
-    return RedirectResponse(url=f"/sales/quotes/{q.id}", status_code=303)
+    return RedirectResponse(url=f"/mail/quotes/{q.id}", status_code=303)
 
 
 @router.get("/quotes/{quote_id}", response_class=HTMLResponse)
@@ -208,7 +252,16 @@ async def quote_detail(request: Request, quote_id: str):
     if not q:
         raise HTTPException(status_code=404, detail="Quote not found")
     template = templates_env.get_template("sales_quote_detail.html")
-    return HTMLResponse(template.render(request=request, quote=q))
+    lead_count = sum(1 for x in quotes if x.status in {"draft", "sent"})
+    orders_open_count = sum(1 for o in load_orders() if o.status == "confirmed")
+    invoices_open_count = sum(1 for i in load_invoices() if i.status == "open")
+    return HTMLResponse(template.render(
+        request=request,
+        quote=q,
+        lead_count=lead_count,
+        orders_open_count=orders_open_count,
+        invoices_open_count=invoices_open_count,
+    ))
 
 
 # APIs
@@ -253,14 +306,23 @@ async def quote_confirm(quote_id: str):
     orders = load_orders()
     orders.append(order)
     save_orders(orders)
-    return RedirectResponse(url=f"/sales/orders/{order.id}", status_code=303)
+    return RedirectResponse(url=f"/mail/orders/{order.id}", status_code=303)
 
 
 @router.get("/orders", response_class=HTMLResponse)
 async def orders_list(request: Request):
     orders = load_orders()
     template = templates_env.get_template("sales_orders.html")
-    return HTMLResponse(template.render(request=request, orders=orders))
+    lead_count = sum(1 for q in load_quotes() if q.status in {"draft", "sent"})
+    orders_open_count = sum(1 for o in orders if o.status == "confirmed")
+    invoices_open_count = sum(1 for i in load_invoices() if i.status == "open")
+    return HTMLResponse(template.render(
+        request=request,
+        orders=orders,
+        lead_count=lead_count,
+        orders_open_count=orders_open_count,
+        invoices_open_count=invoices_open_count,
+    ))
 
 
 @router.get("/orders/{order_id}", response_class=HTMLResponse)
@@ -297,7 +359,12 @@ async def order_deliver(order_id: str):
         record_sales_delivery(note.model_dump())
     except Exception:
         pass
-    return RedirectResponse(url=f"/sales/deliveries/{note.id}", status_code=303)
+    # Post COGS to GL (Finance)
+    try:
+        post_delivery_to_gl(note.model_dump())
+    except Exception:
+        pass
+    return RedirectResponse(url=f"/mail/deliveries/{note.id}", status_code=303)
 
 
 @router.get("/deliveries/{delivery_id}", response_class=HTMLResponse)
@@ -319,13 +386,24 @@ async def order_invoice(order_id: str):
     save_orders(orders)
 
     subtotal = sum(i.quantity * i.unit_price for i in order.items)
-    # VAT based on customer country (from Customers catalog); fallback to demo 10%
-    tax_rate = 0.1
+    # VAT based on customer VAT rate or default by country (SA=15%)
+    tax_rate = 0.0
     try:
         with SessionLocal() as db:
             cust = db.query(Customer).filter(Customer.name == order.customer).first()
-            if cust and cust.vat_rate is not None:
-                tax_rate = float(cust.vat_rate)
+            if cust:
+                if cust.vat_rate is not None:
+                    tax_rate = float(cust.vat_rate)
+                else:
+                    tax_rate = default_vat_rate(getattr(cust, "country_code", None))
+            else:
+                # Fallback to company country defaults (e.g., SA 15%)
+                try:
+                    from .settings import load_company as load_company_settings
+                    company = load_company_settings()
+                    tax_rate = default_vat_rate(company.get("country_code"))
+                except Exception:
+                    tax_rate = 0.0
     except Exception:
         pass
     total = subtotal * (1 + tax_rate)
@@ -363,14 +441,23 @@ async def order_invoice(order_id: str):
         post_invoice_to_gl(invoice.model_dump())
     except Exception:
         pass
-    return RedirectResponse(url=f"/sales/invoices/{invoice.id}", status_code=303)
+    return RedirectResponse(url=f"/mail/invoices/{invoice.id}", status_code=303)
 
 
 @router.get("/invoices", response_class=HTMLResponse)
 async def invoices_list(request: Request):
     invoices = load_invoices()
     template = templates_env.get_template("sales_invoices.html")
-    return HTMLResponse(template.render(request=request, invoices=invoices))
+    lead_count = sum(1 for q in load_quotes() if q.status in {"draft", "sent"})
+    orders_open_count = sum(1 for o in load_orders() if o.status == "confirmed")
+    invoices_open_count = sum(1 for i in invoices if i.status == "open")
+    return HTMLResponse(template.render(
+        request=request,
+        invoices=invoices,
+        lead_count=lead_count,
+        orders_open_count=orders_open_count,
+        invoices_open_count=invoices_open_count,
+    ))
 
 
 @router.get("/invoices/{invoice_id}", response_class=HTMLResponse)
@@ -438,7 +525,7 @@ async def invoice_pay(invoice_id: str, method: str = Form("cash"), bank_account_
         post_payment_to_gl(payment.model_dump())
     except Exception:
         pass
-    return RedirectResponse(url=f"/sales/payments/{payment.id}", status_code=303)
+    return RedirectResponse(url=f"/mail/payments/{payment.id}", status_code=303)
 
 
 @router.get("/payments/{payment_id}", response_class=HTMLResponse)

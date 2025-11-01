@@ -1,0 +1,14 @@
+[
+  {
+    "id": "QA-SAMPLE-DEF-001",
+    "reference": "QA-TEST-DEF-001",
+    "stage": "in_process",
+    "category": "dimension",
+    "severity": "major",
+    "description": "Width deviation beyond tolerance on strip #3",
+    "actions": "Adjusted knives, re-ran test",
+    "status": "open",
+    "nc_code": "NC-DIM-001",
+    "date": "2025-11-01T00:05:00Z"
+  }
+]

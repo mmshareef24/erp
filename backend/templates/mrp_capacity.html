@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MRP • Capacity</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/mrp">MRP</a> / Capacity</nav>
+    </header>
+
+    <main class="content">
+      <div class="actions" style="display:flex; gap:8px; align-items:center;">
+        <a class="btn" href="/mrp/plan">Plan</a>
+        <a class="btn" href="/mrp/forecast">Forecast</a>
+        <a class="btn btn-primary" href="/mrp/capacity">Capacity</a>
+        <a class="btn" href="/mrp/schedule">Schedule</a>
+        <a class="btn" href="/mrp/allocation">Allocation</a>
+        <span class="divider"></span>
+        <span class="chip">Employees: {{ employees_count }}</span>
+        <span class="chip">Labor capacity: {{ labor_minutes_per_day }} min/day</span>
+        <span class="chip">Planned load: {{ planned_minutes }} min</span>
+      </div>
+
+      <section>
+        <h3>Machines</h3>
+        <table class="table">
+          <thead>
+            <tr><th>Name</th><th>Minutes/day</th></tr>
+          </thead>
+          <tbody>
+            {% for m in machines %}
+              <tr><td>{{ m.name }}</td><td>{{ m.minutes_per_day }}</td></tr>
+            {% else %}
+              <tr><td colspan="2" class="muted">No machines configured.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <form action="/mrp/capacity/machines" method="post" style="display:flex; gap:8px; align-items:center;">
+          <label>Name <input type="text" name="name" required placeholder="Machine A" /></label>
+          <label>Minutes/day <input type="number" min="1" name="minutes_per_day" value="480" /></label>
+          <button class="btn" type="submit">Add Machine</button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer">MRP • Capacity</footer>
+  </body>
+</html>

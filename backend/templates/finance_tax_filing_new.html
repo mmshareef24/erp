@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accounting • New Tax Filing</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/accounting">Accounting</a> / <a href="/accounting/tax">Tax</a> / Filings / New</nav>
+    </header>
+
+    <main class="content">
+      <div class="card">
+        <h2>New Tax Filing</h2>
+        <form method="post" action="/accounting/tax/filings">
+          <div class="form-grid">
+            <div>
+              <label>Type</label>
+              <select name="ftype" required>
+                <option value="gst">GST</option>
+                <option value="vat">VAT</option>
+                <option value="tds">TDS</option>
+              </select>
+            </div>
+            <div>
+              <label>Period (YYYY-MM)</label>
+              <input type="text" name="period" placeholder="2025-01" required />
+            </div>
+            <div>
+              <label>Reference</label>
+              <input type="text" name="ref" />
+            </div>
+            <div>
+              <label>Status</label>
+              <select name="status">
+                <option value="draft">Draft</option>
+                <option value="submitted">Submitted</option>
+                <option value="accepted">Accepted</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Create Filing</button>
+            <a class="btn" href="/accounting/tax/filings">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <footer class="footer">Accounting • New Tax Filing</footer>
+  </body>
+</html>

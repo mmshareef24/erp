@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MRP • Allocation</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/mrp">MRP</a> / Allocation</nav>
+    </header>
+
+    <main class="content">
+      <div class="actions" style="display:flex; gap:8px; align-items:center;">
+        <a class="btn" href="/mrp/plan">Plan</a>
+        <a class="btn" href="/mrp/forecast">Forecast</a>
+        <a class="btn" href="/mrp/capacity">Capacity</a>
+        <a class="btn" href="/mrp/schedule">Schedule</a>
+        <a class="btn btn-primary" href="/mrp/allocation">Allocation</a>
+      </div>
+
+      <section>
+        <h3>Assign Resources to Operations</h3>
+        <table class="table">
+          <thead>
+            <tr><th>WO</th><th>Operation</th><th>Minutes</th><th>Machine</th><th>Operator</th><th>Assign</th></tr>
+          </thead>
+          <tbody>
+            {% for w in work_orders %}
+              {% for op in w.operations %}
+                <tr>
+                  <td>{{ w.id }}</td>
+                  <td>{{ op.name }}</td>
+                  <td>{{ op.minutes }}</td>
+                  <td>{{ op.machine or '-' }}</td>
+                  <td>{{ op.operator_emp_id or '-' }}</td>
+                  <td>
+                    <form action="/mrp/allocation/assign" method="post" style="display:inline-flex; gap:8px; align-items:center;">
+                      <input type="hidden" name="wo_id" value="{{ w.id }}" />
+                      <input type="hidden" name="op_index" value="{{ loop.index0 }}" />
+                      <label>Machine
+                        <select name="machine_name">
+                          <option value="">(none)</option>
+                          {% for m in machines %}
+                            <option value="{{ m.name }}">{{ m.name }}</option>
+                          {% endfor %}
+                        </select>
+                      </label>
+                      <label>Operator
+                        <select name="operator_emp_id">
+                          <option value="">(none)</option>
+                          {% for e in employees %}
+                            <option value="{{ e.emp_id }}">{{ e.emp_id }} • {{ e.name }}</option>
+                          {% endfor %}
+                        </select>
+                      </label>
+                      <button class="btn" type="submit">Assign</button>
+                    </form>
+                  </td>
+                </tr>
+              {% else %}
+                <tr><td colspan="6" class="muted">No operations for WO {{ w.id }}.</td></tr>
+              {% endfor %}
+            {% else %}
+              <tr><td colspan="6" class="muted">No open work orders to allocate.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+    </main>
+
+    <footer class="footer">MRP • Allocation</footer>
+  </body>
+</html>

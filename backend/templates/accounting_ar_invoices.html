@@ -33,7 +33,7 @@
         <tbody>
           {% for inv in invoices %}
           <tr>
-            <td><a href="/sales/invoices/{{ inv.id }}">{{ inv.id[:8] }}</a></td>
+            <td><a href="/mail/invoices/{{ inv.id }}">{{ inv.id[:8] }}</a></td>
             <td>{{ inv.customer }}</td>
             <td>{{ inv.date }}</td>
             <td>{{ inv.due_date }}</td>
@@ -41,7 +41,7 @@
             <td>${{ '%.2f'|format(inv.open) }}</td>
             <td>{{ inv.status }}</td>
             <td>
-              <a class="btn" href="/sales/invoices/{{ inv.id }}">View</a>
+              <a class="btn" href="/mail/invoices/{{ inv.id }}">View</a>
             </td>
           </tr>
           {% endfor %}

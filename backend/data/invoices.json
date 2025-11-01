@@ -1,3 +1,15 @@
 [
-  
+  {
+    "id": "INV-SA-TEST-001",
+    "order_id": "",
+    "customer": "Saudi Customer",
+    "date": "2025-11-01T12:00:00Z",
+    "items": [
+      { "product": "Consulting Service", "quantity": 2, "unit_price": 100.0 }
+    ],
+    "status": "open",
+    "subtotal": 200.0,
+    "tax_rate": 0.15,
+    "total": 230.0
+  }
 ]

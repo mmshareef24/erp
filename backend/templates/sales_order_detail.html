@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sales • Order {{ order.id[:8] }}</title>
+    <title>Mail • Order {{ order.id[:8] }}</title>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
     <header class="topbar">
  <div class="brand">Matrix ERP</div>
-      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/sales">Sales</a> / <a href="/sales/orders">Orders</a> / {{ order.id[:8] }}</nav>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/mail">Mail</a> / <a href="/mail/orders">Orders</a> / {{ order.id[:8] }}</nav>
     </header>
 
     <main class="content">
@@ -45,12 +45,12 @@
           </tfoot>
         </table>
         <div class="actions">
-          <form action="/sales/orders/{{ order.id }}/deliver" method="post"><button class="btn">Create Delivery Note</button></form>
-          <form action="/sales/orders/{{ order.id }}/invoice" method="post"><button class="btn btn-primary">Create Invoice</button></form>
+          <form action="/mail/orders/{{ order.id }}/deliver" method="post"><button class="btn">Create Delivery Note</button></form>
+          <form action="/mail/orders/{{ order.id }}/invoice" method="post"><button class="btn btn-primary">Create Invoice</button></form>
         </div>
       </section>
     </main>
 
-    <footer class="footer">Sales • Order</footer>
+    <footer class="footer">Mail • Order</footer>
   </body>
   </html>

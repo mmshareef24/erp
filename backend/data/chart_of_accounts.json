@@ -15,6 +15,11 @@
     "type": "asset"
   },
   {
+    "code": "1200",
+    "name": "Inventory",
+    "type": "asset"
+  },
+  {
     "code": "2100",
     "name": "VAT Payable",
     "type": "liability"

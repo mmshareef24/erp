@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "id": "9f2a1b88-5d6e-4fb8-8f8b-aaaaaaaaaaaa",
+    "date": "2025-11-01T12:40:00Z",
+    "product": "Widget A",
+    "quantity": 3.0,
+    "from_warehouse": "Main",
+    "from_location": "A1",
+    "to_warehouse": "Secondary",
+    "to_location": "B1",
+    "unit_cost": 5.0
+  }
+]

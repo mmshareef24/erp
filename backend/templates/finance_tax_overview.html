@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accounting • Tax Compliance</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/accounting">Accounting</a> / Tax</nav>
+    </header>
+
+    <main class="content">
+      <div class="layout-with-sidebar">
+        <aside class="sidebar">
+          <nav class="submodule-nav">
+            <a href="/accounting/coa">Chart of Accounts</a>
+            <a href="/accounting/journals">Journals</a>
+            <a href="/accounting/trial-balance">Trial Balance</a>
+            <a href="/accounting/pl">Profit &amp; Loss</a>
+            <a href="/accounting/balance-sheet">Balance Sheet</a>
+            <a href="/accounting/budget">Budgeting</a>
+            <a class="active" href="/accounting/tax">Tax Compliance</a>
+          </nav>
+        </aside>
+        <section>
+          <div class="actions">
+            <a class="btn" href="/accounting/tax/settings">Settings</a>
+            <a class="btn" href="/accounting/tax/filings">Filings</a>
+          </div>
+
+          <div class="card">
+            <h2>Tax Overview</h2>
+            <form method="get" action="/accounting/tax" class="form-inline">
+              <label>Period (YYYY-MM)</label>
+              <input type="text" name="period" value="{{ period }}" />
+              <button class="btn" type="submit">Apply</button>
+            </form>
+            <div class="form-grid">
+              <div><strong>Country:</strong> {{ settings.country_code or '-' }}</div>
+              <div><strong>GSTIN:</strong> {{ settings.gstin or '-' }}</div>
+              <div><strong>VAT Number:</strong> {{ settings.vat_number or '-' }}</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3>Sales Tax Collected</h3>
+              <p class="metric">${{ '%.2f'|format(sales_tax) }}</p>
+            </div>
+            <div class="card">
+              <h3>Purchase Tax Credit</h3>
+              <p class="metric">${{ '%.2f'|format(purchase_tax) }}</p>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Net VAT/GST Payable</h3>
+            <p class="metric">${{ '%.2f'|format(net_vat) }}</p>
+          </div>
+
+          <div class="card">
+            <h3>Filings for {{ period }}</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Type</th>
+                  <th>Ref</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for f in filings %}
+                <tr>
+                  <td>{{ f.id }}</td>
+                  <td>{{ f.type|upper }}</td>
+                  <td>{{ f.ref or '-' }}</td>
+                  <td>{{ f.status }}</td>
+                  <td>{{ f.created_at }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="muted">No filings for this period.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">Accounting • Tax Compliance</footer>
+  </body>
+</html>

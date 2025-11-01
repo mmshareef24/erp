@@ -119,7 +119,7 @@
               {% if m.ref and m.ref[:3] == 'WO-' %}
               <a href="/production/work_orders/{{ m.ref[3:] }}">{{ m.ref }}</a>
               {% elif m.ref and m.ref[:4] == 'DEL-' %}
-              <a href="/sales/deliveries/{{ m.ref[4:] }}">{{ m.ref }}</a>
+              <a href="/mail/deliveries/{{ m.ref[4:] }}">{{ m.ref }}</a>
               {% elif m.ref and m.ref[:5] == 'BILL-' %}
               <a href="/purchases/bills/{{ m.ref[5:] }}">{{ m.ref }}</a>
               {% elif m.ref and m.ref[:5] == 'XFER-' %}

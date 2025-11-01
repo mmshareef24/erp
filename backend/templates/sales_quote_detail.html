@@ -3,22 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sales • Quote {{ quote.id[:8] }}</title>
+    <title>Mail • Quote {{ quote.id[:8] }}</title>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
     <header class="topbar">
  <div class="brand">Matrix ERP</div>
-      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/sales">Sales</a> / <a href="/sales/quotes">Quotes</a> / {{ quote.id[:8] }}</nav>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/mail">Mail</a> / <a href="/mail/quotes">Quotes</a> / {{ quote.id[:8] }}</nav>
     </header>
 
     <main class="content">
       <div class="layout-with-sidebar">
         <aside class="sidebar">
           <nav class="submodule-nav">
-            <a href="/sales/orders">Orders</a>
-            <a class="active" href="/sales/quotes">Quotes</a>
-            <a href="/sales/invoices">Invoices</a>
+            <a href="/mail/orders">Orders {% if orders_open_count > 0 %}<span class="nav-badge">{{ orders_open_count }}</span>{% endif %}</a>
+            <a class="active" href="/mail/quotes">Quotes</a>
+            <a href="/mail/invoices">Invoices {% if invoices_open_count > 0 %}<span class="nav-badge">{{ invoices_open_count }}</span>{% endif %}</a>
+            <a href="/mail/leads">Leads {% if lead_count > 0 %}<span class="nav-badge">{{ lead_count }}</span>{% endif %}</a>
           </nav>
         </aside>
         <section>
@@ -54,7 +55,7 @@
               </tfoot>
             </table>
             <div class="actions">
-              <form action="/sales/quotes/{{ quote.id }}/confirm" method="post">
+              <form action="/mail/quotes/{{ quote.id }}/confirm" method="post">
                 <button class="btn btn-primary" type="submit">Confirm & Create Order</button>
               </form>
             </div>
@@ -63,6 +64,6 @@
       </div>
     </main>
 
-    <footer class="footer">Sales • Quote</footer>
+    <footer class="footer">Mail • Quote</footer>
   </body>
   </html>

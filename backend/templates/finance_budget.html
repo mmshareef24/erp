@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accounting • Budgeting</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/accounting">Accounting</a> / Budgeting</nav>
+    </header>
+
+    <main class="content">
+      <div class="layout-with-sidebar">
+        <aside class="sidebar">
+          <nav class="submodule-nav">
+            <a href="/accounting/coa">Chart of Accounts</a>
+            <a href="/accounting/journals">Journals</a>
+            <a href="/accounting/trial-balance">Trial Balance</a>
+            <a href="/accounting/pl">Profit &amp; Loss</a>
+            <a href="/accounting/balance-sheet">Balance Sheet</a>
+            <a class="active" href="/accounting/budget">Budgeting</a>
+            <a href="/accounting/tax">Tax Compliance</a>
+          </nav>
+        </aside>
+        <section>
+          <div class="actions">
+            <a class="btn btn-primary" href="/accounting/budget/new">New Budget</a>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Period</th>
+                <th>Account</th>
+                <th>Limit</th>
+                <th>Forecast</th>
+                <th>Actual</th>
+                <th>Var vs Limit</th>
+                <th>Var vs Forecast</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in budgets %}
+              <tr>
+                <td>{{ b.id }}</td>
+                <td>{{ b.name }}</td>
+                <td>{{ b.period }}</td>
+                <td>
+                  {% if b.account_code %}
+                  {{ b.account_code }}
+                  {% else %}
+                  All income/expense
+                  {% endif %}
+                </td>
+                <td>${{ '%.2f'|format(b.limit) }}</td>
+                <td>${{ '%.2f'|format(b.forecast) }}</td>
+                <td>${{ '%.2f'|format(b.actual or 0) }}</td>
+                <td>${{ '%.2f'|format(b.variance_vs_limit or 0) }}</td>
+                <td>${{ '%.2f'|format(b.variance_vs_forecast or 0) }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="9" class="muted">No budgets yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">Accounting • Budgeting</footer>
+  </body>
+</html>

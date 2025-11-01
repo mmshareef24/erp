@@ -1,0 +1,52 @@
+{% extends "app.html" %}
+{% block title %}Slitting • Plans{% endblock %}
+{% block content %}
+<div class="layout-with-sidebar">
+  <aside class="sidebar">
+    <nav class="submodule-nav">
+      <a href="/slitting/new">New Plan</a>
+      <a href="/slitting/plans" class="active">Saved Plans</a>
+    </nav>
+  </aside>
+  <section>
+    <div class="toolbar">
+      <h2>Saved Slitting Plans</h2>
+      <div class="actions">
+        <a class="btn btn-primary" href="/slitting/new">Create New</a>
+      </div>
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Created</th>
+          <th>Coil</th>
+          <th>Width (mm)</th>
+          <th>Strips</th>
+          <th>Yield %</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in plans %}
+        <tr>
+          <td>{{ p.id }}</td>
+          <td>{{ p.created_at }}</td>
+          <td>{{ p.coil.id or '-' }}</td>
+          <td>{{ p.coil.width_mm }}</td>
+          <td>{{ p.computed.strip_count }}</td>
+          <td>{{ p.computed.yield_pct }}</td>
+          <td>
+            <a class="btn" href="/slitting/plan/{{ p.id }}">View</a>
+            <a class="btn" href="/slitting/plan/{{ p.id }}/print" target="_blank">Print</a>
+            <a class="btn" href="/slitting/plan/{{ p.id }}/json" target="_blank">JSON</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="muted">No plans yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+{% endblock %}

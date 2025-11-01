@@ -1,0 +1,36 @@
+{% extends "app.html" %}
+{% block title %}Human Resources • Payroll Run Detail{% endblock %}
+{% block actions %}
+<div class="actions">
+  <a class="btn" href="/hr/payroll/runs">Back to Runs</a>
+  <a class="btn" href="/hr/payroll">Back to Payroll</a>
+</div>
+{% endblock %}
+{% block content %}
+<section style="padding: 1rem;">
+  <h2><i class="fa-solid fa-money-bill"></i> Payroll Run</h2>
+  {% if item %}
+  <section class="card">
+    <div class="card-header">Details</div>
+    <div class="card-body">
+      <div class="form-grid">
+        <label>Period
+          <input type="text" disabled value="{{ item.period or '-' }}" />
+        </label>
+        <label>Bonuses
+          <input type="text" disabled value="{{ item.bonuses or 'no' }}" />
+        </label>
+        <label>Deductions
+          <input type="text" disabled value="{{ item.deductions or 'no' }}" />
+        </label>
+        <label>Created At
+          <input type="text" disabled value="{{ item.created_at or '-' }}" />
+        </label>
+      </div>
+    </div>
+  </section>
+  {% else %}
+  <p class="muted">Run not found.</p>
+  {% endif %}
+</section>
+{% endblock %}

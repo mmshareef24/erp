@@ -22,6 +22,7 @@
           <tr>
             <th>Product</th>
             <th>Components</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -33,6 +34,7 @@
                 {{ c.product }} × {{ c.quantity }}{% if not loop.last %}, {% endif %}
               {% endfor %}
             </td>
+            <td><a class="btn" href="/production/boms/{{ b.product }}/requirements?qty=1">Requirements</a></td>
           </tr>
           {% else %}
           <tr><td colspan="2" class="muted">No BOMs yet.</td></tr>

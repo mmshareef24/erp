@@ -98,6 +98,45 @@ async def boms_list(request: Request):
     return HTMLResponse(tpl.render(request=request, boms=boms))
 
 
+@router.get("/boms/{product}/requirements", response_class=HTMLResponse)
+async def bom_requirements(request: Request, product: str, qty: float = 1.0, warehouse: str | None = None, location: str | None = None):
+    """Show material requirements for a product given quantity, with on-hand and shortages."""
+    bom = _find_bom(product)
+    if not bom:
+        return HTMLResponse(f"<h1>No BOM found for {product}</h1>", status_code=404)
+    try:
+        qty = float(qty)
+    except Exception:
+        qty = 1.0
+    # On-hand summary optionally filtered by site
+    from .inventory import compute_on_hand_site, compute_on_hand
+    site_summary = compute_on_hand_site(warehouse=warehouse, location=location) if (warehouse or location) else compute_on_hand()
+    rows: list[dict] = []
+    for comp in bom.get("components", []):
+        cp = comp.get("product")
+        per_unit = float(comp.get("quantity", 0))
+        required = per_unit * qty
+        onhand = float(site_summary.get(cp, {}).get("qty", 0.0))
+        shortage = max(0.0, required - onhand)
+        rows.append({
+            "product": cp,
+            "per_unit": per_unit,
+            "required": round(required, 3),
+            "onhand": round(onhand, 3),
+            "shortage": round(shortage, 3),
+        })
+    tpl = templates_env.get_template("production_bom_requirements.html")
+    return HTMLResponse(tpl.render(
+        request=request,
+        bom=bom,
+        rows=rows,
+        fg_product=product,
+        qty=qty,
+        selected_warehouse=warehouse or "",
+        selected_location=location or "",
+    ))
+
+
 @router.get("/boms/new", response_class=HTMLResponse)
 async def boms_new(request: Request):
     products = load_products()
@@ -248,6 +287,92 @@ async def wo_detail(request: Request, wo_id: str):
     return HTMLResponse(tpl.render(request=request, wo=wo, bom=bom))
 
 
+@router.post("/work_orders/batch")
+async def wos_batch(action: str = Form(...), wo_ids: list[str] = Form([]), qty: float = Form(0.0)):
+    """Batch operations for Work Orders: start, issue, complete."""
+    processed: list[str] = []
+    for wo_id in wo_ids:
+        wo = _get_wo(wo_id)
+        if not wo:
+            continue
+        bom = _find_bom(wo.get("product"))
+        if action == "start":
+            if wo.get("status") == "draft" and bom:
+                if wo.get("issue_method") == "manual":
+                    factor = float(wo.get("quantity", 0))
+                    consumed_lines: list[dict] = []
+                    for comp in bom.get("components", []):
+                        cp = comp.get("product")
+                        cqty = float(comp.get("quantity", 0)) * factor
+                        avg_cost = get_avg_cost(cp, warehouse=wo.get("warehouse", "Main"), location=wo.get("location", ""))
+                        record_move(product=cp, quantity=cqty, unit_cost=avg_cost, mtype="out", ref=f"WO-{wo_id}", warehouse=wo.get("warehouse", "Main"), location=wo.get("location", ""))
+                        consumed_lines.append({"product": cp, "quantity": cqty, "unit_cost": avg_cost})
+                    wo["consumed"] = (wo.get("consumed", []) or []) + consumed_lines
+                wo["status"] = "in_progress"
+                _save_wo(wo)
+                processed.append(wo_id)
+        elif action == "issue":
+            try:
+                issue_qty = float(qty)
+            except Exception:
+                issue_qty = 0.0
+            if bom and issue_qty > 0:
+                consumed_lines: list[dict] = []
+                for comp in bom.get("components", []):
+                    cp = comp.get("product")
+                    cqty = float(comp.get("quantity", 0)) * float(issue_qty)
+                    avg_cost = get_avg_cost(cp, warehouse=wo.get("warehouse", "Main"), location=wo.get("location", ""))
+                    record_move(product=cp, quantity=cqty, unit_cost=avg_cost, mtype="out", ref=f"WO-{wo_id}", warehouse=wo.get("warehouse", "Main"), location=wo.get("location", ""))
+                    consumed_lines.append({"product": cp, "quantity": cqty, "unit_cost": avg_cost})
+                wo["consumed"] = (wo.get("consumed", []) or []) + consumed_lines
+                if wo.get("status") == "draft":
+                    wo["status"] = "in_progress"
+                _save_wo(wo)
+                processed.append(wo_id)
+        elif action == "complete":
+            try:
+                produce_qty = float(qty) if qty else float(wo.get("quantity", 0))
+            except Exception:
+                produce_qty = float(wo.get("quantity", 0))
+            if wo.get("status") in {"draft", "in_progress"}:
+                # Backflush if needed
+                if wo.get("issue_method") == "backflush" and not wo.get("consumed") and bom:
+                    consumed_lines: list[dict] = []
+                    for comp in bom.get("components", []):
+                        cp = comp.get("product")
+                        cqty = float(comp.get("quantity", 0)) * float(produce_qty)
+                        avg_cost = get_avg_cost(cp, warehouse=wo.get("warehouse", "Main"), location=wo.get("location", ""))
+                        record_move(product=cp, quantity=cqty, unit_cost=avg_cost, mtype="out", ref=f"WO-{wo_id}", warehouse=wo.get("warehouse", "Main"), location=wo.get("location", ""))
+                        consumed_lines.append({"product": cp, "quantity": cqty, "unit_cost": avg_cost})
+                    wo["consumed"] = (wo.get("consumed", []) or []) + consumed_lines
+                # Material total
+                mat_total = 0.0
+                if bom:
+                    for comp in bom.get("components", []):
+                        cp = comp.get("product")
+                        cqty = float(comp.get("quantity", 0)) * float(produce_qty)
+                        avg_cost = get_avg_cost(cp, warehouse=wo.get("warehouse", "Main"), location=wo.get("location", ""))
+                        mat_total += cqty * avg_cost
+                extra_base = float(wo.get("labor_cost", 0)) + float(wo.get("overhead_cost", 0))
+                ops_total = sum((float(op.get("minutes", 0)) * float(op.get("rate", 0))) for op in (wo.get("operations") or []))
+                planned_qty = float(wo.get("quantity", 0))
+                ratio = (produce_qty / planned_qty) if planned_qty else 1.0
+                extra = (extra_base + ops_total) * ratio
+                total_cost = mat_total + extra
+                unit_cost = (total_cost / produce_qty) if produce_qty else 0.0
+                record_move(product=wo.get("product"), quantity=produce_qty, unit_cost=unit_cost, mtype="in", ref=f"WO-{wo_id}", warehouse=wo.get("warehouse", "Main"), location=wo.get("location", ""))
+                produced_lines = (wo.get("produced", []) or [])
+                produced_lines.append({"product": wo.get("product"), "quantity": produce_qty, "unit_cost": unit_cost})
+                wo["produced"] = produced_lines
+                total_produced = sum(float(l.get("quantity", 0)) for l in wo.get("produced", []))
+                planned_qty = float(wo.get("quantity", 0))
+                wo["status"] = "completed" if total_produced >= planned_qty else "in_progress"
+                _save_wo(wo)
+                processed.append(wo_id)
+    # Basic redirect back to list
+    return RedirectResponse(url="/production/work_orders", status_code=303)
+
+
 @router.post("/work_orders/{wo_id}/start")
 async def wo_start(wo_id: str):
     wo = _get_wo(wo_id)
@@ -356,6 +481,129 @@ async def wo_complete(wo_id: str, produce_qty: float = Form(None), scrap_qty: fl
     except Exception:
         label_qty = 1
     return RedirectResponse(url=f"/production/work_orders/{wo_id}/labels?qty={label_qty}", status_code=303)
+
+
+@router.post("/work_orders/{wo_id}/execute/log")
+async def wo_exec_log(wo_id: str, operator: str = Form(""), action: str = Form(""), step: str = Form(""), notes: str = Form("")):
+    """Record an operator action (start/stop/inspect etc.) on a work order."""
+    wo = _get_wo(wo_id)
+    if not wo:
+        return HTMLResponse("Work Order not found", status_code=404)
+    logs = (wo.get("operator_logs") or [])
+    logs.append({
+        "date": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "operator": operator,
+        "action": action,
+        "step": step,
+        "notes": notes,
+    })
+    wo["operator_logs"] = logs
+    if wo.get("status") == "draft":
+        wo["status"] = "in_progress"
+    _save_wo(wo)
+    return RedirectResponse(url=f"/production/work_orders/{wo_id}", status_code=303)
+
+
+@router.post("/work_orders/{wo_id}/execute/downtime")
+async def wo_exec_downtime(wo_id: str, minutes: float = Form(...), reason: str = Form("")):
+    """Record downtime event with minutes and reason."""
+    wo = _get_wo(wo_id)
+    if not wo:
+        return HTMLResponse("Work Order not found", status_code=404)
+    dlist = (wo.get("downtime") or [])
+    try:
+        mins = float(minutes)
+    except Exception:
+        mins = 0.0
+    dlist.append({
+        "date": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "minutes": mins,
+        "reason": reason,
+    })
+    wo["downtime"] = dlist
+    _save_wo(wo)
+    return RedirectResponse(url=f"/production/work_orders/{wo_id}", status_code=303)
+
+
+@router.post("/work_orders/{wo_id}/execute/output")
+async def wo_exec_output(wo_id: str, good_qty: float = Form(0.0), scrap_qty: float = Form(0.0)):
+    """Record operator output counts (good and scrap) without inventory moves."""
+    wo = _get_wo(wo_id)
+    if not wo:
+        return HTMLResponse("Work Order not found", status_code=404)
+    try:
+        g = float(good_qty or 0)
+    except Exception:
+        g = 0.0
+    try:
+        s = float(scrap_qty or 0)
+    except Exception:
+        s = 0.0
+    outlogs = (wo.get("output_logs") or [])
+    outlogs.append({
+        "date": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "good_qty": g,
+        "scrap_qty": s,
+    })
+    wo["output_logs"] = outlogs
+    # Accumulate scrap metadata
+    if s > 0:
+        scrap = (wo.get("scrap", []) or [])
+        scrap.append({"quantity": s, "date": datetime.utcnow().isoformat(timespec="seconds") + "Z"})
+        wo["scrap"] = scrap
+    if wo.get("status") == "draft":
+        wo["status"] = "in_progress"
+    _save_wo(wo)
+    return RedirectResponse(url=f"/production/work_orders/{wo_id}", status_code=303)
+
+
+@router.post("/work_orders/{wo_id}/produce_wip")
+async def wo_produce_wip(wo_id: str, produce_qty: float = Form(...), wip_location: str = Form("WIP")):
+    """Record semi-finished production to a WIP location with cost accumulation."""
+    wo = _get_wo(wo_id)
+    if not wo:
+        return HTMLResponse("Work Order not found", status_code=404)
+    try:
+        qty = float(produce_qty)
+    except Exception:
+        qty = 0.0
+    if qty <= 0:
+        return RedirectResponse(url=f"/production/work_orders/{wo_id}", status_code=303)
+    bom = _find_bom(wo.get("product"))
+    # If backflush and no consumption yet, consume materials now for qty
+    if wo.get("issue_method") == "backflush" and not wo.get("consumed") and bom:
+        consumed_lines: list[dict] = []
+        for comp in bom.get("components", []):
+            cp = comp.get("product")
+            cqty = float(comp.get("quantity", 0)) * float(qty)
+            avg_cost = get_avg_cost(cp, warehouse=wo.get("warehouse", "Main"), location=wo.get("location", ""))
+            record_move(product=cp, quantity=cqty, unit_cost=avg_cost, mtype="out", ref=f"WO-{wo_id}", warehouse=wo.get("warehouse", "Main"), location=wo.get("location", ""))
+            consumed_lines.append({"product": cp, "quantity": cqty, "unit_cost": avg_cost})
+        wo["consumed"] = (wo.get("consumed", []) or []) + consumed_lines
+    # Cost estimate for WIP unit
+    mat_total = 0.0
+    if bom:
+        for comp in bom.get("components", []):
+            cp = comp.get("product")
+            cqty = float(comp.get("quantity", 0)) * float(qty)
+            avg_cost = get_avg_cost(cp, warehouse=wo.get("warehouse", "Main"), location=wo.get("location", ""))
+            mat_total += cqty * avg_cost
+    extra_base = float(wo.get("labor_cost", 0)) + float(wo.get("overhead_cost", 0))
+    ops_total = sum((float(op.get("minutes", 0)) * float(op.get("rate", 0))) for op in (wo.get("operations") or []))
+    planned_qty = float(wo.get("quantity", 0))
+    ratio = (qty / planned_qty) if planned_qty else 1.0
+    extra = (extra_base + ops_total) * ratio
+    total_cost = mat_total + extra
+    unit_cost = (total_cost / qty) if qty else 0.0
+    # Record WIP as stock-in to WIP location (same warehouse)
+    record_move(product=wo.get("product"), quantity=qty, unit_cost=unit_cost, mtype="in", ref=f"WO-{wo_id}-WIP", warehouse=wo.get("warehouse", "Main"), location=wip_location)
+    wip_lines = (wo.get("wip", []) or [])
+    wip_lines.append({"product": wo.get("product"), "quantity": qty, "unit_cost": unit_cost, "location": wip_location})
+    wo["wip"] = wip_lines
+    if wo.get("status") == "draft":
+        wo["status"] = "in_progress"
+    _save_wo(wo)
+    return RedirectResponse(url=f"/production/work_orders/{wo_id}", status_code=303)
 
 
 @router.get("/work_orders/{wo_id}/labels", response_class=HTMLResponse)

@@ -1,3 +1,16 @@
 [
-  
+  {
+    "id": "0279f5bc-409d-4b57-9161-5866e7b28758",
+    "customer": "Acme",
+    "date": "2025-11-01T07:53:40Z",
+    "items": [
+      {
+        "product": "Widget A",
+        "quantity": 3.0,
+        "unit_price": 20.0
+      }
+    ],
+    "status": "confirmed",
+    "total": 60.0
+  }
 ]

@@ -92,7 +92,7 @@
                   <div class="muted">
                     →
                     {% if t.reconciled_ref.type == 'sales' %}
-                      <a href="/sales/payments/{{ t.reconciled_ref.id }}">Sales {{ t.reconciled_ref.id[:8] }}</a>
+                      <a href="/mail/payments/{{ t.reconciled_ref.id }}">Sales {{ t.reconciled_ref.id[:8] }}</a>
                     {% elif t.reconciled_ref.type == 'purchase' %}
                       <a href="/purchases/payments/{{ t.reconciled_ref.id }}">Purchase {{ t.reconciled_ref.id[:8] }}</a>
                     {% else %}

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Matrix ERP</title>
     <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   </head>
   <body>
     <header class="topbar">
@@ -15,48 +16,414 @@
       <div class="user">matrix</div>
     </header>
 
-    {% set logged_in = request.cookies.get('session_user') %}
-    {% if logged_in %}
     <div class="layout">
       <aside class="main-nav">
         <div class="section-title">Menu</div>
         <nav class="nav">
-          <a href="/"><span class="icon">🏠</span><span class="label">Dashboard</span></a>
-          <a href="/catalogs/customers"><span class="icon">👤</span><span class="label">Customer</span></a>
-          <a href="/employees"><span class="icon">👥</span><span class="label">People</span></a>
-          <a href="/settings/company"><span class="icon">🏢</span><span class="label">Company</span></a>
-          <a href="/sales/orders"><span class="icon">📦</span><span class="label">Offer</span></a>
-          <a href="/sales/invoices"><span class="icon">🧾</span><span class="label">Invoice</span></a>
-          <a href="/sales/quotes"><span class="icon">📝</span><span class="label">Quote</span></a>
-          <a href="/banking/reconcile"><span class="icon">💳</span><span class="label">Payment</span></a>
-          <a href="/app/accounting"><span class="icon">🧮</span><span class="label">Admin</span></a>
-          <a href="/app/settings"><span class="icon">⚙️</span><span class="label">Settings</span></a>
+          <!-- 1. Dashboard -->
+          <details {% if request.url.path == '/' or request.url.path.startswith('/chart') %}open{% endif %}>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-home"></i></span><span class="label">Dashboard</span></summary>
+            <div class="subnav">
+              <a href="/chart" class="{% if request.url.path.startswith('/chart') %}active{% endif %}">Overview Metrics</a>
+              <a href="#">Branch Summary</a>
+              <a href="#">Notifications</a>
+            </div>
+          </details>
+
+          <!-- 2. Human Resources -->
+          <details {% if request.url.path.startswith('/employees') or request.url.path.startswith('/time') or request.url.path.startswith('/hr') %}open{% endif %}>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-users"></i></span><span class="label">Human Resources</span></summary>
+            <div class="subnav">
+              <a href="/employees" title="Personal data, ID docs, contracts" class="{% if request.url.path.startswith('/employees') %}active{% endif %}">Employee Directory</a>
+              <a href="/hr/payroll" title="Salary processing, bonuses, deductions" class="{% if request.url.path.startswith('/hr/payroll') %}active{% endif %}">Payroll</a>
+              <a href="/time/attendance" title="Clock-in/out, shift planning" class="{% if request.url.path.startswith('/time/attendance') or request.url.path.startswith('/time/shifts') %}active{% endif %}">Attendance &amp; Shifts</a>
+              <a href="/time/leave" title="Request, approve, track leaves" class="{% if request.url.path.startswith('/time/leave') %}active{% endif %}">Leave Management</a>
+              <a href="/hr/recruitment" title="Job postings, applications, onboarding" class="{% if request.url.path.startswith('/hr/recruitment') %}active{% endif %}">Recruitment</a>
+            </div>
+          </details>
+
+          <!-- 3. Finance & Accounting -->
+          <details {% if request.url.path.startswith('/accounting') or request.url.path.startswith('/purchases') or request.url.path.startswith('/banking') %}open{% endif %}>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-money-bill"></i></span><span class="label">Finance &amp; Accounting</span></summary>
+            <div class="subnav">
+              <a href="/accounting/coa" class="{% if request.url.path.startswith('/accounting/coa') %}active{% endif %}">General Ledger</a>
+              <a href="/purchases/bills" class="{% if request.url.path.startswith('/purchases/bills') %}active{% endif %}">Accounts Payable</a>
+              <a href="/accounting/ar" class="{% if request.url.path.startswith('/accounting/ar') %}active{% endif %}">Accounts Receivable</a>
+              <a href="#">Budgeting &amp; Forecasting</a>
+              <a href="/banking/reconcile" class="{% if request.url.path.startswith('/banking/reconcile') %}active{% endif %}">Bank Reconciliation</a>
+            </div>
+          </details>
+
+          <!-- 4. Sales Management -->
+          <details {% if request.url.path.startswith('/mail') or request.url.path.startswith('/catalogs/customers') %}open{% endif %}>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-chart-line"></i></span><span class="label">Sales Management</span></summary>
+            <div class="subnav">
+              <a href="/mail/leads" class="{% if request.url.path.startswith('/mail/leads') %}active{% endif %}">Leads &amp; Opportunities</a>
+              <a href="/mail/quotes" class="{% if request.url.path.startswith('/mail/quotes') %}active{% endif %}">Quotations</a>
+              <a href="/mail/orders" class="{% if request.url.path.startswith('/mail/orders') %}active{% endif %}">Sales Orders</a>
+              <a href="/catalogs/customers" class="{% if request.url.path.startswith('/catalogs/customers') %}active{% endif %}">Customer Database</a>
+            </div>
+          </details>
+
+          <!-- 5. Inventory Management -->
+          <details {% if request.url.path.startswith('/inventory') %}open{% endif %}>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-warehouse"></i></span><span class="label">Inventory Management</span></summary>
+            <div class="subnav">
+              <a href="/inventory/moves" class="{% if request.url.path.startswith('/inventory/moves') %}active{% endif %}">Stock Ledger</a>
+              <a href="/inventory/transfers" class="{% if request.url.path.startswith('/inventory/transfers') %}active{% endif %}">Warehouse Transfer</a>
+              <a href="/inventory/issue" class="{% if request.url.path.startswith('/inventory/issue') %}active{% endif %}">Stock Adjustment</a>
+              <a href="/catalogs/products" class="{% if request.url.path.startswith('/catalogs/products') %}active{% endif %}">Item Master</a>
+            </div>
+          </details>
+
+          <!-- 6. Procurement -->
+          <details {% if request.url.path.startswith('/purchases') %}open{% endif %}>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-shopping-cart"></i></span><span class="label">Procurement</span></summary>
+            <div class="subnav">
+              <a href="#">Purchase Requisitions</a>
+              <a href="#">Vendor Management</a>
+              <a href="/purchases/orders" class="{% if request.url.path.startswith('/purchases/orders') %}active{% endif %}">Purchase Orders</a>
+              <a href="/inventory/receive" class="{% if request.url.path.startswith('/inventory/receive') %}active{% endif %}">Goods Receipt</a>
+            </div>
+          </details>
+
+          <!-- 7. Manufacturing -->
+          <details {% if request.url.path.startswith('/production') or request.url.path.startswith('/mrp') %}open{% endif %}>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-cogs"></i></span><span class="label">Manufacturing</span></summary>
+            <div class="subnav">
+              <a href="/production/work_orders" class="{% if request.url.path.startswith('/production/work_orders') %}active{% endif %}">Work Orders</a>
+              <a href="/production/boms" class="{% if request.url.path.startswith('/production/boms') %}active{% endif %}">BOM (Bill of Materials)</a>
+              <a href="#">Job Scheduling</a>
+              <a href="#">WIP Tracking</a>
+            </div>
+          </details>
+
+          <!-- 8. Production Planning -->
+          <details>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-project-diagram"></i></span><span class="label">Production Planning</span></summary>
+            <div class="subnav">
+              <a href="#">Master Production Schedule</a>
+              <a href="#">Capacity Planning</a>
+              <a href="#">Resource Allocation</a>
+              <a href="#">Forecasting</a>
+            </div>
+          </details>
+
+          <!-- 9. Quality Assurance -->
+          <details>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-check-circle"></i></span><span class="label">Quality Assurance</span></summary>
+            <div class="subnav">
+              <a href="/quality/inspections" class="{% if request.url.path.startswith('/quality/inspections') %}active{% endif %}">Inspection Plans</a>
+              <a href="/quality/inspections" class="{% if request.url.path.startswith('/quality/inspections') %}active{% endif %}">QC Logs</a>
+              <a href="/quality/defects" class="{% if request.url.path.startswith('/quality/defects') %}active{% endif %}">Defect Management</a>
+              <a href="/quality/compliance" class="{% if request.url.path.startswith('/quality/compliance') %}active{% endif %}">Compliance Reports</a>
+            </div>
+          </details>
+
+          <!-- 10. Maintenance (MRO) -->
+          <details>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-tools"></i></span><span class="label">Maintenance (MRO)</span></summary>
+            <div class="subnav">
+              <a href="#">Maintenance Calendar</a>
+              <a href="#">Equipment Registry</a>
+              <a href="#">Preventive Maintenance</a>
+              <a href="#">Work Orders</a>
+            </div>
+          </details>
+
+          <!-- 11. Branch & Logistics -->
+          <details>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-building"></i></span><span class="label">Branch &amp; Logistics</span></summary>
+            <div class="subnav">
+              <a href="#">Inter-Branch Transfers</a>
+              <a href="#">Branch Performance</a>
+              <a href="#">Branch Approvals</a>
+              <a href="#">Notifications</a>
+            </div>
+          </details>
+
+          <!-- 12. CRM -->
+          <details>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-handshake"></i></span><span class="label">CRM</span></summary>
+            <div class="subnav">
+              <a href="#">Campaigns</a>
+              <a href="#">Communication Logs</a>
+              <a href="#">Feedback Collection</a>
+              <a href="#">Follow-ups</a>
+            </div>
+          </details>
+
+          <!-- 13. Reports & Analytics -->
+          <details {% if request.url.path.startswith('/chart') %}open{% endif %}>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-chart-pie"></i></span><span class="label">Reports &amp; Analytics</span></summary>
+            <div class="subnav">
+              <a href="#">Custom Reports</a>
+              <a href="/chart" class="{% if request.url.path.startswith('/chart') %}active{% endif %}">KPIs Dashboard</a>
+              <a href="#">Export Center</a>
+              <a href="#">Audit Logs</a>
+            </div>
+          </details>
+
+          <!-- 14. Document Control -->
+          <details>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-folder"></i></span><span class="label">Document Control</span></summary>
+            <div class="subnav">
+              <a href="#">SOPs</a>
+              <a href="#">Training Material</a>
+              <a href="#">Certifications</a>
+              <a href="#">Version History</a>
+            </div>
+          </details>
+
+          <!-- 15. Settings & Permissions -->
+          <details {% if request.url.path.startswith('/settings') or request.url.path.startswith('/app/settings') %}open{% endif %}>
+            <summary><span class="caret">▸</span><span class="icon"><i class="fa-solid fa-cog"></i></span><span class="label">Settings &amp; Permissions</span></summary>
+            <div class="subnav">
+              <a href="/app/settings" class="{% if request.url.path.startswith('/app/settings') %}active{% endif %}">Role Management</a>
+              <a href="/app/settings" class="{% if request.url.path.startswith('/app/settings') %}active{% endif %}">Module Visibility</a>
+              <a href="#">Theme &amp; Layout</a>
+              <a href="#">Notifications Settings</a>
+            </div>
+          </details>
         </nav>
       </aside>
       <main class="content">
         <div class="apps-grid">
           {% for a in apps %}
           <a href="/app/{{ a.slug }}" class="app-tile" style="--tile-color: {{ a.color }}">
-            <div class="app-icon">{{ a.icon }}</div>
             <div class="app-name">{{ a.name }}</div>
           </a>
           {% endfor %}
         </div>
+
+        <section class="dashboard-widgets">
+          <div class="widgets-toolbar">
+            <h2 class="widgets-title">Dashboard</h2>
+            <div class="widgets-actions">
+              <label>From <input type="date" id="filterFrom" /></label>
+              <label>To <input type="date" id="filterTo" /></label>
+              <button class="btn" id="btnRefresh">Refresh</button>
+              <button class="btn" id="btnCustomize">Customize</button>
+            </div>
+          </div>
+          <div id="widgetsGrid" class="widgets-grid"></div>
+        </section>
       </main>
     </div>
-    {% else %}
-    <main class="content">
-      <div class="apps-grid">
-        {% for a in apps %}
-        <a href="/app/{{ a.slug }}" class="app-tile" style="--tile-color: {{ a.color }}">
-          <div class="app-icon">{{ a.icon }}</div>
-          <div class="app-name">{{ a.name }}</div>
-        </a>
-        {% endfor %}
-      </div>
-    </main>
-    {% endif %}
 
     <footer class="footer">Matrix ERP</footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+      const DEFAULT_WIDGETS = [
+        { key: 'sales_invoices_monthly', type: 'line', title: 'Sales Invoices • Monthly Total' },
+        { key: 'sales_orders_status', type: 'bar', title: 'Sales Orders • Status' },
+        { key: 'purchases_bills_status', type: 'pie', title: 'Purchases Bills • Status' },
+      ];
+
+      function getWidgets() {
+        try {
+          const raw = localStorage.getItem('dashboardWidgets');
+          if (!raw) return DEFAULT_WIDGETS;
+          const arr = JSON.parse(raw);
+          if (Array.isArray(arr) && arr.length > 0) return arr;
+          return DEFAULT_WIDGETS;
+        } catch { return DEFAULT_WIDGETS; }
+      }
+
+      function saveWidgets(widgets) {
+        localStorage.setItem('dashboardWidgets', JSON.stringify(widgets));
+      }
+
+      function makeCard(widget) {
+        const card = document.createElement('div');
+        card.className = 'card chart-card';
+        const head = document.createElement('div');
+        head.className = 'card-head';
+        const h = document.createElement('h3');
+        h.textContent = widget.title;
+        const sel = document.createElement('select');
+        sel.innerHTML = `
+          <option value="bar">Bar</option>
+          <option value="line">Line</option>
+          <option value="pie">Pie</option>
+          <option value="doughnut">Doughnut</option>
+        `;
+        sel.value = widget.type || 'line';
+        head.appendChild(h);
+        head.appendChild(sel);
+        const canvas = document.createElement('canvas');
+        card.appendChild(head);
+        card.appendChild(canvas);
+        sel.addEventListener('change', () => {
+          const widgets = getWidgets();
+          const idx = widgets.findIndex(w => w.key === widget.key);
+          if (idx !== -1) {
+            widgets[idx].type = sel.value;
+            saveWidgets(widgets);
+          }
+          loadAndRender();
+        });
+        return { card, canvas };
+      }
+
+      function renderWidget(container, widget, data) {
+        const { card, canvas } = makeCard(widget);
+        container.appendChild(card);
+        const ctx = canvas.getContext('2d');
+        let config = {};
+        if (widget.key === 'sales_invoices_monthly') {
+          const points = data.sales_invoices_monthly || [];
+          config = {
+            type: widget.type || 'line',
+            data: {
+              labels: points.map(p => p.month),
+              datasets: [{ label: 'Total', data: points.map(p => p.total), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.2)' }]
+            }, options: { responsive: true, maintainAspectRatio: false }
+          };
+        } else if (widget.key === 'sales_orders_status') {
+          const st = data.sales_orders_status || {};
+          config = {
+            type: widget.type || 'bar',
+            data: {
+              labels: Object.keys(st),
+              datasets: [{ label: 'Count', data: Object.values(st), backgroundColor: ['#34d399','#60a5fa','#f59e0b'] }]
+            }, options: { responsive: true, maintainAspectRatio: false }
+          };
+        } else if (widget.key === 'purchases_bills_status') {
+          const st = data.purchases_bills_status || {};
+          config = {
+            type: widget.type || 'pie',
+            data: {
+              labels: Object.keys(st),
+              datasets: [{ label: 'Count', data: Object.values(st), backgroundColor: ['#ef4444','#10b981'] }]
+            }, options: { responsive: true, maintainAspectRatio: false }
+          };
+        } else if (widget.key === 'purchases_bills_monthly') {
+          const points = data.purchases_bills_monthly || [];
+          config = {
+            type: widget.type || 'line',
+            data: {
+              labels: points.map(p => p.month),
+              datasets: [{ label: 'Total', data: points.map(p => p.total), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.2)' }]
+            }, options: { responsive: true, maintainAspectRatio: false }
+          };
+        } else if (widget.key === 'inventory_top_value') {
+          const rows = data.inventory_top_value || [];
+          config = {
+            type: widget.type || 'bar',
+            data: {
+              labels: rows.map(r => r.product),
+              datasets: [{ label: 'Value', data: rows.map(r => r.value), backgroundColor: '#8b5cf6' }]
+            }, options: { responsive: true, maintainAspectRatio: false }
+          };
+        }
+        // Set a fixed height for better layout
+        canvas.style.height = '220px';
+        // eslint-disable-next-line no-new
+        new Chart(ctx, config);
+      }
+
+      async function loadAndRender() {
+        const container = document.getElementById('widgetsGrid');
+        container.innerHTML = '';
+        let payload = {};
+        try {
+          const from = /** @type {HTMLInputElement} */(document.getElementById('filterFrom')).value || '';
+          const to = /** @type {HTMLInputElement} */(document.getElementById('filterTo')).value || '';
+          const qs = new URLSearchParams();
+          if (from) qs.set('from_date', from);
+          if (to) qs.set('to_date', to);
+          const url = qs.toString() ? `/api/dashboard/data?${qs.toString()}` : '/api/dashboard/data';
+          const res = await fetch(url);
+          payload = await res.json();
+        } catch (e) { console.error('Failed to load dashboard data', e); }
+        const widgets = getWidgets();
+        widgets.forEach(w => renderWidget(container, w, payload));
+      }
+
+      // Simple customization dialog
+      function openCustomize() {
+        const current = getWidgets();
+        const dialog = document.createElement('div');
+        dialog.className = 'customize-dialog';
+        dialog.innerHTML = `
+          <div class="dialog-card">
+            <h3>Customize Dashboard</h3>
+            <div class="dialog-grid">
+              <label><input type="checkbox" data-key="sales_invoices_monthly"> Sales Invoices • Monthly</label>
+              <label><input type="checkbox" data-key="sales_orders_status"> Sales Orders • Status</label>
+              <label><input type="checkbox" data-key="purchases_bills_status"> Purchases Bills • Status</label>
+              <label><input type="checkbox" data-key="purchases_bills_monthly"> Purchases Bills • Monthly</label>
+              <label><input type="checkbox" data-key="inventory_top_value"> Inventory • Top Value</label>
+            </div>
+            <div class="dialog-types">
+              <label>Default chart type
+                <select id="defaultChartType">
+                  <option value="bar">Bar</option>
+                  <option value="line" selected>Line</option>
+                  <option value="pie">Pie</option>
+                  <option value="doughnut">Doughnut</option>
+                </select>
+              </label>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn btn-primary" id="btnSaveWidgets">Save</button>
+              <button class="btn" id="btnCancelWidgets">Cancel</button>
+            </div>
+          </div>`;
+        document.body.appendChild(dialog);
+        // Initialize checkboxes from current
+        const selectedKeys = new Set(current.map(w => w.key));
+        dialog.querySelectorAll('input[type=checkbox]').forEach(cb => {
+          cb.checked = selectedKeys.has(cb.dataset.key);
+        });
+        // Handlers
+        dialog.querySelector('#btnCancelWidgets').addEventListener('click', () => dialog.remove());
+        dialog.querySelector('#btnSaveWidgets').addEventListener('click', () => {
+          const type = /** @type {HTMLSelectElement} */(dialog.querySelector('#defaultChartType')).value;
+          const chosen = [];
+          dialog.querySelectorAll('input[type=checkbox]').forEach(cb => {
+            if (cb.checked) {
+              const key = cb.dataset.key;
+              const titleMap = {
+                sales_invoices_monthly: 'Sales Invoices • Monthly Total',
+                sales_orders_status: 'Sales Orders • Status',
+                purchases_bills_status: 'Purchases Bills • Status',
+                purchases_bills_monthly: 'Purchases Bills • Monthly Total',
+                inventory_top_value: 'Inventory • Top Value',
+              };
+              chosen.push({ key, type, title: titleMap[key] || key });
+            }
+          });
+          saveWidgets(chosen.length ? chosen : DEFAULT_WIDGETS);
+          dialog.remove();
+          loadAndRender();
+        });
+      }
+
+      // Initialize filters from localStorage
+      (function initFilters() {
+        try {
+          const fromSaved = localStorage.getItem('dashboardFrom') || '';
+          const toSaved = localStorage.getItem('dashboardTo') || '';
+          const fromEl = /** @type {HTMLInputElement} */(document.getElementById('filterFrom'));
+          const toEl = /** @type {HTMLInputElement} */(document.getElementById('filterTo'));
+          if (fromSaved) fromEl.value = fromSaved;
+          if (toSaved) toEl.value = toSaved;
+        } catch {}
+      })();
+
+      document.getElementById('btnCustomize').addEventListener('click', openCustomize);
+      document.getElementById('btnRefresh').addEventListener('click', () => {
+        try {
+          const from = /** @type {HTMLInputElement} */(document.getElementById('filterFrom')).value || '';
+          const to = /** @type {HTMLInputElement} */(document.getElementById('filterTo')).value || '';
+          localStorage.setItem('dashboardFrom', from);
+          localStorage.setItem('dashboardTo', to);
+        } catch {}
+        loadAndRender();
+      });
+      loadAndRender();
+    </script>
   </body>
   </html>

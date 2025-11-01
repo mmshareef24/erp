@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quality • {% if item %}Edit Compliance Document{% else %}New Compliance Document{% endif %}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/quality">Quality</a> / <a href="/quality/compliance">Compliance</a> / {% if item %}Edit{% else %}New{% endif %}</nav>
+    </header>
+
+    <main class="content">
+      <div class="card">
+        <h2>{% if item %}Edit Compliance Document{% else %}New Compliance Document{% endif %}</h2>
+        <form method="post" action="{% if item %}/quality/compliance/{{ item.id }}{% else %}/quality/compliance{% endif %}" class="form">
+          <div class="form-row">
+            <label>Type</label>
+            <select name="doc_type">
+              <option value="ISO" {% if item and item.doc_type=='ISO' %}selected{% endif %}>ISO</option>
+              <option value="Safety" {% if item and item.doc_type=='Safety' %}selected{% endif %}>Safety</option>
+              <option value="Regulatory" {% if item and item.doc_type=='Regulatory' %}selected{% endif %}>Regulatory</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Title</label>
+            <input type="text" name="title" value="{{ item.title if item }}" />
+          </div>
+          <div class="form-row">
+            <label>Number</label>
+            <input type="text" name="number" value="{{ item.number if item }}" />
+          </div>
+          <div class="form-row">
+            <label>Issue Date</label>
+            <input type="date" name="issue_date" value="{{ item.issue_date if item }}" />
+          </div>
+          <div class="form-row">
+            <label>Expiry Date</label>
+            <input type="date" name="expiry_date" value="{{ item.expiry_date if item }}" />
+          </div>
+          <div class="form-row">
+            <label>Owner</label>
+            <input type="text" name="owner" value="{{ item.owner if item }}" />
+          </div>
+          <div class="form-row">
+            <label>Status</label>
+            <select name="status">
+              <option value="active" {% if item and item.status=='active' %}selected{% endif %}>Active</option>
+              <option value="expired" {% if item and item.status=='expired' %}selected{% endif %}>Expired</option>
+            </select>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Save</button>
+            <a class="btn" href="/quality/compliance">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </body>
+</html>

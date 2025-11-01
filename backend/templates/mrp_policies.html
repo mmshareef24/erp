@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MRP • Policies</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/mrp">MRP</a> / Policies</nav>
+    </header>
+
+    <main class="content">
+      <div class="actions" style="display:flex; gap:8px; align-items:center;">
+        <a class="btn" href="/mrp/plan">Plan</a>
+        <a class="btn" href="/mrp/forecast">Forecast</a>
+        <a class="btn" href="/mrp/capacity">Capacity</a>
+        <a class="btn" href="/mrp/schedule">Schedule</a>
+        <a class="btn" href="/mrp/allocation">Allocation</a>
+        <a class="btn btn-primary" href="/mrp/policies">Policies</a>
+      </div>
+
+      <section>
+        <h3>Planning Policies</h3>
+        <table class="table">
+          <thead>
+            <tr><th>Product</th><th>Mode</th><th>Reorder Level</th><th>Target Level</th></tr>
+          </thead>
+          <tbody>
+            {% for r in rows %}
+              <tr>
+                <td>{{ r.product }}</td>
+                <td>{{ r.mode }}</td>
+                <td>{{ r.reorder_level }}</td>
+                <td>{{ r.target_level }}</td>
+              </tr>
+            {% else %}
+              <tr><td colspan="4" class="muted">No policies yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h3>Add / Update Policy</h3>
+        <form action="/mrp/policies" method="post" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <label>Product
+            <input list="productsList" type="text" name="product" required placeholder="Widget A" />
+            <datalist id="productsList">
+              {% for p in products %}
+                <option value="{{ p }}"></option>
+              {% endfor %}
+            </datalist>
+          </label>
+          <label>Mode
+            <select name="mode">
+              <option value="mixed">Mixed</option>
+              <option value="mto">Make to Order</option>
+              <option value="mts">Make to Stock</option>
+            </select>
+          </label>
+          <label>Reorder Level
+            <input type="number" min="0" step="0.001" name="reorder_level" value="0" />
+          </label>
+          <label>Target Level
+            <input type="number" min="0" step="0.001" name="target_level" value="0" />
+          </label>
+          <button class="btn" type="submit">Save Policy</button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer">MRP • Policies</footer>
+  </body>
+</html>

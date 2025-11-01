@@ -10,7 +10,7 @@
         "unit_cost": 5.0
       }
     ],
-    "status": "billed",
+    "status": "confirmed",
     "total": 50.0
   }
 ]

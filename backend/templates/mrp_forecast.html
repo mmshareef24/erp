@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MRP • Forecast</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/mrp">MRP</a> / Forecast</nav>
+    </header>
+
+    <main class="content">
+      <div class="actions" style="display:flex; gap:8px; align-items:center;">
+        <a class="btn" href="/mrp/plan">Plan</a>
+        <a class="btn btn-primary" href="/mrp/forecast">Forecast</a>
+        <a class="btn" href="/mrp/capacity">Capacity</a>
+        <a class="btn" href="/mrp/schedule">Schedule</a>
+        <a class="btn" href="/mrp/allocation">Allocation</a>
+        <span class="divider"></span>
+        <form action="/mrp/forecast" method="get" style="display:inline-flex; gap:8px; align-items:center;">
+          <label>Months Ahead
+            <input type="number" min="1" max="12" name="months_ahead" value="{{ months_ahead }}" />
+          </label>
+          <label>
+            <input type="checkbox" name="seasonality" value="true" {% if seasonality %}checked{% endif %} /> Seasonality
+          </label>
+          <button class="btn" type="submit">Recompute</button>
+        </form>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Month</th>
+            <th>Forecast Qty</th>
+            <th>Mean</th>
+            <th>Season Index</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td>{{ r.product }}</td>
+            <td>{{ r.month }}</td>
+            <td>{{ '%.3f'|format(r.forecast_qty) }}</td>
+            <td class="muted">{{ '%.3f'|format(r.mean) }}</td>
+            <td class="muted">{{ '%.3f'|format(r.season_index) }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="muted">No sales history yet to forecast.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </main>
+
+    <footer class="footer">MRP • Forecast</footer>
+  </body>
+</html>

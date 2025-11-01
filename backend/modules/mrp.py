@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import Dict, List, Tuple, Set
 
 from fastapi import APIRouter, Request, Form
@@ -101,11 +101,143 @@ def _aggregate(lst: List[Tuple[str, float]]) -> Dict[str, float]:
     return out
 
 
+# --- Demand Forecasting ---
+
+DATA_DIR = Path("backend/data")
+MACHINES_FILE = DATA_DIR / "machines.json"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+if not MACHINES_FILE.exists():
+    MACHINES_FILE.write_text("[]", encoding="utf-8")
+
+
+def _month_key(dt: date) -> str:
+    return f"{dt.year:04d}-{dt.month:02d}"
+
+
+def _load_json(path: Path) -> list:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+
+def load_machines() -> List[dict]:
+    return _load_json(MACHINES_FILE)
+
+
+def save_machines(rows: List[dict]) -> None:
+    try:
+        MACHINES_FILE.write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def forecast_demand(months_ahead: int = 3, seasonality: bool = True) -> List[dict]:
+    """Simple demand forecast per product using sales history with optional seasonal index.
+    - Aggregates monthly sales quantities from orders for the last 12 months.
+    - Computes per-month seasonal index relative to the 12-month mean.
+    - Forecasts the next N months using mean × seasonal index for corresponding calendar months.
+    """
+    # Build monthly totals per product
+    orders = load_sales_orders()
+    by_month: Dict[str, Dict[str, float]] = {}
+    for o in orders:
+        try:
+            od = datetime.fromisoformat(o.date.replace("Z", "")).date()
+        except Exception:
+            continue
+        mk = _month_key(od)
+        for it in o.items:
+            p = it.product
+            qty = float(it.quantity)
+            by_month.setdefault(p, {})
+            by_month[p][mk] = by_month[p].get(mk, 0.0) + qty
+    results: List[dict] = []
+    today = datetime.utcnow().date()
+    # Historical window: last 12 months
+    hist_months: List[str] = []
+    for i in range(12, 0, -1):
+        d = (today.replace(day=1) - timedelta(days=30 * i))
+        hist_months.append(_month_key(d))
+    # Prepare forecast months ahead
+    ahead_keys: List[str] = []
+    base = today.replace(day=1)
+    for i in range(1, months_ahead + 1):
+        d = base + timedelta(days=30 * i)
+        ahead_keys.append(_month_key(d))
+    for p, mon in by_month.items():
+        # Mean over available hist months
+        hist_vals = [mon.get(m, 0.0) for m in hist_months]
+        if not hist_vals:
+            continue
+        mean = sum(hist_vals) / max(1, len(hist_vals))
+        # Seasonal index by calendar month number (1-12)
+        month_index: Dict[int, float] = {}
+        if seasonality:
+            month_totals: Dict[int, List[float]] = {}
+            for mk, qty in mon.items():
+                try:
+                    y, m = mk.split("-")
+                    mnum = int(m)
+                except Exception:
+                    continue
+                month_totals.setdefault(mnum, []).append(float(qty))
+            for mnum, vals in month_totals.items():
+                avg_m = sum(vals) / max(1, len(vals))
+                month_index[mnum] = (avg_m / mean) if mean else 1.0
+        # Build forecast rows
+        for ak in ahead_keys:
+            try:
+                _, m = ak.split("-")
+                mnum = int(m)
+            except Exception:
+                mnum = today.month
+            idx = month_index.get(mnum, 1.0) if seasonality else 1.0
+            fqty = mean * idx
+            results.append({
+                "product": p,
+                "month": ak,
+                "forecast_qty": round(float(fqty), 3),
+                "mean": round(mean, 3),
+                "season_index": round(idx, 3),
+            })
+    # Sort by product, then month
+    results.sort(key=lambda r: (r["product"], r["month"]))
+    return results
+
+
+def _load_policies() -> Dict[str, dict]:
+    POLICIES_FILE = DATA_DIR / "planning_policies.json"
+    if not POLICIES_FILE.exists():
+        try:
+            POLICIES_FILE.write_text("[]", encoding="utf-8")
+        except Exception:
+            pass
+    rows = _load_json(POLICIES_FILE)
+    out: Dict[str, dict] = {}
+    for r in rows:
+        out[str(r.get("product"))] = {
+            "mode": str(r.get("mode", "mixed")).lower(),
+            "reorder_level": float(r.get("reorder_level", 0.0)),
+            "target_level": float(r.get("target_level", 0.0)),
+        }
+    return out
+
+
+def _save_policies(policies: List[dict]) -> None:
+    POLICIES_FILE = DATA_DIR / "planning_policies.json"
+    try:
+        POLICIES_FILE.write_text(json.dumps(policies, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+
+
 def plan_mrp(
     warehouse: str | None = None,
     location: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
+    mode: str | None = None,
 ):
     # Demand: outstanding sales order quantities within date range
     orders = [o for o in load_sales_orders() if _date_in_range(o.date, start_date, end_date)]
@@ -157,12 +289,28 @@ def plan_mrp(
     # Determine FG net requirements and explode to components
     boms = load_boms()
     bom_index = _build_bom_index(boms)
+    policies = _load_policies()
+    selected_mode = (mode or "mixed").lower()
     fg_net: Dict[str, float] = {}
-    for p, dqty in demand.items():
-        supply_qty = (onhand.get(p, 0.0) + incoming_po.get(p, 0.0) + planned_wo_supply.get(p, 0.0))
-        net = max(0.0, float(dqty) - float(supply_qty))
-        if net > 0:
-            fg_net[p] = net
+    if selected_mode in {"mixed", "mto"}:
+        # MTO: net demand from sales orders
+        for p, dqty in demand.items():
+            supply_qty = (onhand.get(p, 0.0) + incoming_po.get(p, 0.0) + planned_wo_supply.get(p, 0.0))
+            net = max(0.0, float(dqty) - float(supply_qty))
+            if net > 0:
+                fg_net[p] = fg_net.get(p, 0.0) + net
+    if selected_mode in {"mixed", "mts"}:
+        # MTS: fill up to target_level for products with MTS policy
+        for p, policy in policies.items():
+            if str(policy.get("mode", "mixed")).lower() not in {"mixed", "mts"}:
+                continue
+            target = float(policy.get("target_level", 0.0))
+            if target <= 0:
+                continue
+            supply_qty = onhand.get(p, 0.0) + incoming_po.get(p, 0.0) + planned_wo_supply.get(p, 0.0)
+            deficit = max(0.0, target - float(supply_qty))
+            if deficit > 0:
+                fg_net[p] = fg_net.get(p, 0.0) + deficit
 
     make_suggestions: Dict[str, float] = {}
     buy_suggestions: Dict[str, float] = {}
@@ -216,6 +364,8 @@ def plan_mrp(
             "need_by": need_by_dt.isoformat(),
             "plan_start": plan_start_dt.isoformat(),
             "order_by": order_by_dt.isoformat(),
+            "policy": str(policies.get(p, {}).get("mode", "mixed")),
+            "target_level": float(policies.get(p, {}).get("target_level", 0.0)),
         })
 
     return {
@@ -226,12 +376,13 @@ def plan_mrp(
         "planned_wo": planned_wo_supply,
         "make_suggestions": make_suggestions,
         "buy_suggestions": buy_suggestions,
+        "policies": policies,
     }
 
 
 @router.get("/plan", response_class=HTMLResponse)
-async def mrp_plan(request: Request, warehouse: str | None = None, location: str | None = None, start_date: str | None = None, end_date: str | None = None):
-    data = plan_mrp(warehouse=warehouse, location=location, start_date=start_date, end_date=end_date)
+async def mrp_plan(request: Request, warehouse: str | None = None, location: str | None = None, start_date: str | None = None, end_date: str | None = None, mode: str | None = None):
+    data = plan_mrp(warehouse=warehouse, location=location, start_date=start_date, end_date=end_date, mode=mode)
     tpl = templates_env.get_template("mrp_plan.html")
     return HTMLResponse(tpl.render(
         request=request,
@@ -240,7 +391,134 @@ async def mrp_plan(request: Request, warehouse: str | None = None, location: str
         selected_location=location or "",
         selected_start_date=start_date or "",
         selected_end_date=end_date or "",
+        selected_mode=(mode or "mixed"),
     ))
+
+
+@router.get("/forecast", response_class=HTMLResponse)
+async def mrp_forecast(request: Request, months_ahead: int = 3, seasonality: bool = True):
+    try:
+        months = int(months_ahead)
+    except Exception:
+        months = 3
+    rows = forecast_demand(months_ahead=months, seasonality=bool(seasonality))
+    tpl = templates_env.get_template("mrp_forecast.html")
+    return HTMLResponse(tpl.render(
+        request=request,
+        rows=rows,
+        months_ahead=months,
+        seasonality=seasonality,
+    ))
+
+
+@router.get("/capacity", response_class=HTMLResponse)
+async def mrp_capacity(request: Request):
+    # Compute simple capacity summary: labor and machines per day
+    machines = load_machines()
+    emps_count = 0
+    try:
+        from .employees import load_employees as _load_emps
+        emps_count = len(_load_emps())
+    except Exception:
+        emps_count = 0
+    labor_minutes_per_day = emps_count * 8 * 60
+    # Planned load from open work orders operations
+    wos = load_work_orders()
+    planned_minutes = sum(float(op.get("minutes", 0)) for w in wos if w.get("status") in {"draft", "in_progress"} for op in (w.get("operations") or []))
+    tpl = templates_env.get_template("mrp_capacity.html")
+    return HTMLResponse(tpl.render(
+        request=request,
+        machines=machines,
+        labor_minutes_per_day=labor_minutes_per_day,
+        planned_minutes=round(planned_minutes, 2),
+        employees_count=emps_count,
+    ))
+
+
+@router.post("/capacity/machines")
+async def mrp_capacity_add_machine(name: str = Form(...), minutes_per_day: float = Form(480)):
+    machines = load_machines()
+    machines.append({"name": name, "minutes_per_day": float(minutes_per_day)})
+    save_machines(machines)
+    return RedirectResponse(url="/mrp/capacity", status_code=303)
+
+
+@router.get("/schedule", response_class=HTMLResponse)
+async def mrp_schedule(request: Request, view: str = "daily"):
+    # Derive a simple schedule from draft/in_progress WOs and operations
+    wos = load_work_orders()
+    # For demo: build buckets by planned_start date if present, else today
+    today = datetime.utcnow().date()
+    buckets: Dict[str, List[dict]] = {}
+    for w in wos:
+        if w.get("status") not in {"draft", "in_progress"}:
+            continue
+        start_str = w.get("planned_start") or today.isoformat()
+        buckets.setdefault(start_str, []).append(w)
+    rows = []
+    for dstr, lst in sorted(buckets.items()):
+        total_minutes = sum(float(op.get("minutes", 0)) for w in lst for op in (w.get("operations") or []))
+        rows.append({"date": dstr, "wo_count": len(lst), "total_minutes": round(total_minutes, 2)})
+    tpl = templates_env.get_template("mrp_schedule.html")
+    return HTMLResponse(tpl.render(request=request, view=view, rows=rows, wos=wos))
+
+
+@router.post("/schedule/auto")
+async def mrp_schedule_auto():
+    # Auto-assign planned_start based on simple capacity threshold
+    machines = load_machines()
+    total_machine_minutes = sum(float(m.get("minutes_per_day", 0)) for m in machines) or 480.0
+    try:
+        from .employees import load_employees as _load_emps
+        labor_minutes = len(_load_emps()) * 8 * 60
+    except Exception:
+        labor_minutes = 0.0
+    daily_capacity = min(total_machine_minutes, labor_minutes or total_machine_minutes)
+    wos = load_work_orders()
+    # Assign sequential days while filling capacity with operations minutes
+    day = datetime.utcnow().date()
+    used = 0.0
+    for w in wos:
+        if w.get("status") not in {"draft", "in_progress"}:
+            continue
+        op_minutes = sum(float(op.get("minutes", 0)) for op in (w.get("operations") or []))
+        if used + op_minutes > daily_capacity:
+            # move to next day
+            day = day + timedelta(days=1)
+            used = 0.0
+        w["planned_start"] = day.isoformat()
+        used += op_minutes
+    save_work_orders(wos)
+    return RedirectResponse(url="/mrp/schedule", status_code=303)
+
+
+@router.get("/allocation", response_class=HTMLResponse)
+async def mrp_allocation(request: Request):
+    machines = load_machines()
+    try:
+        from .employees import load_employees as _load_emps
+        employees = _load_emps()
+    except Exception:
+        employees = []
+    wos = load_work_orders()
+    open_wos = [w for w in wos if w.get("status") in {"draft", "in_progress"}]
+    tpl = templates_env.get_template("mrp_allocation.html")
+    return HTMLResponse(tpl.render(request=request, machines=machines, employees=employees, work_orders=open_wos))
+
+
+@router.post("/allocation/assign")
+async def mrp_allocation_assign(wo_id: str = Form(...), op_index: int = Form(...), machine_name: str = Form(""), operator_emp_id: str = Form("")):
+    wos = load_work_orders()
+    for w in wos:
+        if w.get("id") == wo_id:
+            ops = (w.get("operations") or [])
+            if 0 <= int(op_index) < len(ops):
+                ops[int(op_index)]["machine"] = machine_name or None
+                ops[int(op_index)]["operator_emp_id"] = operator_emp_id or None
+                w["operations"] = ops
+            break
+    save_work_orders(wos)
+    return RedirectResponse(url="/mrp/allocation", status_code=303)
 
 
 @router.post("/execute")
@@ -249,9 +527,10 @@ async def mrp_execute(
     create_wos: bool = Form(False),
     warehouse: str = Form("Main"),
     location: str = Form(""),
+    mode: str = Form("mixed"),
 ):
     # Compute suggestions
-    data = plan_mrp(warehouse=warehouse, location=location)
+    data = plan_mrp(warehouse=warehouse, location=location, mode=mode)
     # Create aggregated PO for buys
     created: Dict[str, List[str]] = {"pos": [], "wos": []}
     if create_pos and data["buy_suggestions"]:
@@ -299,6 +578,7 @@ async def mrp_execute(
                 "issue_method": "backflush",
                 "reserved": [],
                 "scrap": [],
+                "planning_mode": (mode or "mixed"),
             })
         save_work_orders(wos)
         # Note: we don't have IDs easily per product here; just indicate count
@@ -310,4 +590,43 @@ async def mrp_execute(
     if created["wos"]:
         msg_parts.append(f"WOs: {', '.join(created['wos'])}")
     notice = "; ".join(msg_parts) if msg_parts else "No actions taken"
-    return RedirectResponse(url=f"/mrp/plan?warehouse={warehouse}&location={location}&notice={notice}", status_code=303)
+    return RedirectResponse(url=f"/mrp/plan?warehouse={warehouse}&location={location}&mode={mode}&notice={notice}", status_code=303)
+
+
+@router.get("/policies", response_class=HTMLResponse)
+async def mrp_policies(request: Request):
+    POLICIES_FILE = DATA_DIR / "planning_policies.json"
+    rows = _load_json(POLICIES_FILE)
+    # Load products list for convenience if available
+    products: List[str] = []
+    try:
+        from .inventory import load_products as _lp
+        products = [p.get("name") for p in _lp()] or []
+    except Exception:
+        products = []
+    tpl = templates_env.get_template("mrp_policies.html")
+    return HTMLResponse(tpl.render(request=request, rows=rows, products=products))
+
+
+@router.post("/policies")
+async def mrp_policies_save(product: str = Form(...), mode: str = Form("mixed"), reorder_level: float = Form(0.0), target_level: float = Form(0.0)):
+    POLICIES_FILE = DATA_DIR / "planning_policies.json"
+    rows = _load_json(POLICIES_FILE)
+    # Upsert
+    found = False
+    for r in rows:
+        if str(r.get("product")) == product:
+            r["mode"] = str(mode).lower()
+            r["reorder_level"] = float(reorder_level)
+            r["target_level"] = float(target_level)
+            found = True
+            break
+    if not found:
+        rows.append({
+            "product": product,
+            "mode": str(mode).lower(),
+            "reorder_level": float(reorder_level),
+            "target_level": float(target_level),
+        })
+    _save_policies(rows)
+    return RedirectResponse(url="/mrp/policies", status_code=303)

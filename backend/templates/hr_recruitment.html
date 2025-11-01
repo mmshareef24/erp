@@ -1,0 +1,52 @@
+{% extends "app.html" %}
+{% block title %}Human Resources • Recruitment{% endblock %}
+{% block content %}
+<section style="padding: 1rem;">
+  <h2><i class="fa-solid fa-user-plus"></i> Recruitment</h2>
+  <p class="muted">Job postings, candidate sourcing, and interview scheduling.</p>
+  {% block actions %}
+  <div class="actions">
+    <a class="btn btn-primary" href="/hr/recruitment/new">Create Job</a>
+    <a class="btn" href="/hr/recruitment#import">Import Candidates</a>
+    <a class="btn" href="/hr/recruitment#schedule">Schedule Interviews</a>
+  </div>
+  {% endblock %}
+  {% if request.query_params.get('created') %}
+  <section class="card" style="margin-top: 12px;">
+    <div class="card-header">Status</div>
+    <div class="card-body">
+      <p style="color: #0a7a26;">Job created:
+        <strong>{{ request.query_params.get('title') or 'New Role' }}</strong>.
+      </p>
+    </div>
+  </section>
+  {% endif %}
+  {% if recent_jobs and recent_jobs|length > 0 %}
+  <section class="card" style="margin-top: 12px;">
+    <div class="card-header">Recent Jobs</div>
+    <div class="card-body">
+      <ul>
+        {% for j in recent_jobs %}
+        <li>
+          <strong>{{ j.title or '-' }}</strong>
+          — {{ j.department or '-' }}, {{ j.location or '-' }}
+          <span class="muted">({{ j.status or 'open' }} at {{ j.created_at or '-' }})</span>
+        </li>
+        {% endfor %}
+      </ul>
+      <a class="btn" href="/hr/jobs">View all jobs</a>
+    </div>
+  </section>
+  {% endif %}
+  <section class="card">
+    <div class="card-header">Pipeline</div>
+    <div class="card-body">
+      <ul>
+        <li>Open roles</li>
+        <li>Active candidates</li>
+        <li>Upcoming interviews</li>
+      </ul>
+    </div>
+  </section>
+</section>
+{% endblock %}

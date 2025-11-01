@@ -1,1 +1,4 @@
-[]
+[
+  { "name": "Main" },
+  { "name": "Secondary" }
+]

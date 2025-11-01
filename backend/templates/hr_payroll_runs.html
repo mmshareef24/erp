@@ -1,0 +1,33 @@
+{% extends "app.html" %}
+{% block title %}Human Resources • Payroll Runs{% endblock %}
+{% block actions %}
+<div class="actions">
+  <a class="btn btn-primary" href="/hr/payroll/run">Run Payroll</a>
+  <a class="btn" href="/hr/payroll">Back to Payroll</a>
+</div>
+{% endblock %}
+{% block content %}
+<section style="padding: 1rem;">
+  <h2><i class="fa-solid fa-list"></i> Payroll Runs</h2>
+  <p class="muted">Most recent payroll cycles submitted.</p>
+
+  {% if runs and runs|length > 0 %}
+  <section class="card">
+    <div class="card-header">Runs</div>
+    <div class="card-body">
+      <ul>
+        {% for r in runs %}
+        <li>
+          <a href="/hr/payroll/run/{% if r.id %}id/{{ r.id }}{% else %}{{ loop.index0 }}{% endif %}"><strong>{{ r.period or '-' }}</strong></a>
+          — bonuses: {{ r.bonuses or 'no' }}, deductions: {{ r.deductions or 'no' }}
+          <span class="muted">(at {{ r.created_at or '-' }})</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+  {% else %}
+  <p class="muted">No payroll runs yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

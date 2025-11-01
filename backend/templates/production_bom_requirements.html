@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Production • Material Requirements</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/production">Production</a> / <a href="/production/boms">BOMs</a> / Requirements</nav>
+    </header>
+
+    <main class="content">
+      <div class="card">
+        <h2>Material Requirements</h2>
+        <p><strong>Product:</strong> {{ fg_product }} &nbsp; <strong>Quantity:</strong> {{ qty }}</p>
+        <form action="/production/boms/{{ fg_product }}/requirements" method="get" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
+          <input type="hidden" name="product" value="{{ fg_product }}" />
+          <label>Qty <input type="number" name="qty" step="0.01" min="0" value="{{ qty }}" /></label>
+          <label>Warehouse
+            <input type="text" name="warehouse" value="{{ selected_warehouse }}" placeholder="Main" />
+          </label>
+          <label>Location
+            <input type="text" name="location" value="{{ selected_location }}" placeholder="" />
+          </label>
+          <button class="btn" type="submit">Update</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Per Unit</th>
+              <th>Required</th>
+              <th>On Hand</th>
+              <th>Shortage</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in rows %}
+            <tr>
+              <td>{{ r.product }}</td>
+              <td>{{ r.per_unit }}</td>
+              <td>{{ r.required }}</td>
+              <td>{{ r.onhand }}</td>
+              <td>{{ r.shortage }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="muted">No components listed in BOM.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="actions">
+        <a class="btn" href="/production/boms">Back to BOMs</a>
+        <a class="btn" href="/production/work_orders/new">Create Work Order</a>
+      </div>
+    </main>
+
+    <footer class="footer">Production • Material Requirements</footer>
+  </body>
+ </html>

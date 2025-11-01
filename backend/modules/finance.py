@@ -11,6 +11,10 @@ from fastapi.templating import Jinja2Templates
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 CHART_FILE = os.path.join(DATA_DIR, "chart_of_accounts.json")
 JOURNAL_FILE = os.path.join(DATA_DIR, "journal_entries.json")
+BUDGETS_FILE = os.path.join(DATA_DIR, "budgets.json")
+TAX_SETTINGS_FILE = os.path.join(DATA_DIR, "tax_settings.json")
+TAX_FILINGS_FILE = os.path.join(DATA_DIR, "tax_filings.json")
+STOCK_MOVES_FILE = os.path.join(DATA_DIR, "stock_moves.json")
 
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates"))
 
@@ -23,6 +27,7 @@ def ensure_finance_storage():
             {"code": "1000", "name": "Cash", "type": "asset"},
             {"code": "1010", "name": "Bank", "type": "asset"},
             {"code": "1100", "name": "Accounts Receivable", "type": "asset"},
+            {"code": "1200", "name": "Inventory", "type": "asset"},
             {"code": "2000", "name": "Accounts Payable", "type": "liability"},
             {"code": "2100", "name": "VAT Payable", "type": "liability"},
             {"code": "4000", "name": "Sales Revenue", "type": "income"},
@@ -32,6 +37,15 @@ def ensure_finance_storage():
             json.dump(chart, f, indent=2)
     if not os.path.exists(JOURNAL_FILE):
         with open(JOURNAL_FILE, "w", encoding="utf-8") as f:
+            json.dump([], f, indent=2)
+    if not os.path.exists(BUDGETS_FILE):
+        with open(BUDGETS_FILE, "w", encoding="utf-8") as f:
+            json.dump([], f, indent=2)
+    if not os.path.exists(TAX_SETTINGS_FILE):
+        with open(TAX_SETTINGS_FILE, "w", encoding="utf-8") as f:
+            json.dump({"country_code": "", "gst_rate": None, "vat_rate": None, "tds_rates": {}, "gstin": "", "vat_number": "", "tds_tan": ""}, f, indent=2)
+    if not os.path.exists(TAX_FILINGS_FILE):
+        with open(TAX_FILINGS_FILE, "w", encoding="utf-8") as f:
             json.dump([], f, indent=2)
 
 
@@ -55,6 +69,61 @@ def load_journals() -> List[Dict]:
 def save_journals(entries: List[Dict]):
     with open(JOURNAL_FILE, "w", encoding="utf-8") as f:
         json.dump(entries, f, indent=2)
+
+
+def ensure_account(code: str, name: str, atype: str) -> str:
+    """Ensure an account exists in the chart; create if missing."""
+    chart = load_chart()
+    if not any(a.get("code") == code for a in chart):
+        chart.append({"code": code, "name": name, "type": atype})
+        chart = sorted(chart, key=lambda a: a.get("code", ""))
+        save_chart(chart)
+    return code
+
+
+def _load_stock_moves() -> List[Dict]:
+    try:
+        if not os.path.exists(STOCK_MOVES_FILE):
+            return []
+        with open(STOCK_MOVES_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+# --- Budgeting storage helpers ---
+def load_budgets() -> List[Dict]:
+    ensure_finance_storage()
+    with open(BUDGETS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_budgets(rows: List[Dict]):
+    with open(BUDGETS_FILE, "w", encoding="utf-8") as f:
+        json.dump(rows, f, indent=2)
+
+
+# --- Tax storage helpers ---
+def load_tax_settings() -> Dict:
+    ensure_finance_storage()
+    with open(TAX_SETTINGS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_tax_settings(s: Dict):
+    with open(TAX_SETTINGS_FILE, "w", encoding="utf-8") as f:
+        json.dump(s, f, indent=2)
+
+
+def load_tax_filings() -> List[Dict]:
+    ensure_finance_storage()
+    with open(TAX_FILINGS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_tax_filings(rows: List[Dict]):
+    with open(TAX_FILINGS_FILE, "w", encoding="utf-8") as f:
+        json.dump(rows, f, indent=2)
 
 
 def append_journal_entry(date: str, ref: str, memo: str, lines: List[Dict]) -> Dict:
@@ -107,6 +176,49 @@ def ledger_for_account(code: str) -> List[Dict]:
                     "balance": round(running, 2),
                 })
     return ledger
+
+
+def actual_for_period_account(period: str, account_code: Optional[str]) -> float:
+    """Compute actual amount for given YYYY-MM period and optional account_code.
+    Sum debit-credit for matching lines within the month. If account_code is None,
+    include all expense/income accounts.
+    """
+    # Parse period
+    try:
+        year, month = [int(x) for x in period.split("-")[:2]]
+    except Exception:
+        return 0.0
+    entries = load_journals()
+    chart = load_chart()
+    type_by_code = {a.get("code"): a.get("type") for a in chart}
+    total = 0.0
+    for e in entries:
+        # e.get("date") can be YYYY-MM-DD; match year-month prefix
+        date_str = str(e.get("date") or "")
+        if not date_str.startswith(f"{year:04d}-{month:02d}"):
+            continue
+        for l in e.get("lines", []):
+            code = l.get("account_code")
+            if account_code and code != account_code:
+                continue
+            if not account_code:
+                # only consider income/expense
+                if type_by_code.get(code) not in ("income", "expense"):
+                    continue
+            debit = float(l.get("debit", 0) or 0)
+            credit = float(l.get("credit", 0) or 0)
+            # For expense, debit increases; for income, credit increases.
+            sign = 1.0 if type_by_code.get(code) == "expense" else -1.0
+            total += sign * (debit - credit)
+    return round(total, 2)
+
+
+def period_matches(date_iso: str, period: str) -> bool:
+    try:
+        year, month = [int(x) for x in period.split("-")[:2]]
+    except Exception:
+        return False
+    return str(date_iso or "").startswith(f"{year:04d}-{month:02d}")
 
 
 def trial_balance() -> List[Dict]:
@@ -202,19 +314,55 @@ def post_payment_to_gl(payment: Dict):
 
 
 def post_purchase_bill_to_gl(bill: Dict):
-    """Post a purchase bill to GL: DR Expense, DR VAT Payable (decrease), CR AP."""
+    """Post a purchase bill to GL: DR Inventory, DR VAT Payable (decrease), CR AP."""
     subtotal = float(bill.get("subtotal", 0))
     tax_rate = float(bill.get("tax_rate", 0))
     vat = round(subtotal * tax_rate, 2)
     total = round(subtotal + vat, 2)
     vendor = bill.get("vendor")
     ref = f"BILL-{bill.get('id')}"
-    date = bill.get("date") or datetime.utcnow().date().isoformat()
+    date = bill.get("date") or datetime.utcnow().date().isoformat() # no change
     memo = f"Bill {bill.get('id')} from {vendor}"
+    # Ensure Inventory account exists
+    ensure_account("1200", "Inventory", "asset")
     lines = [
-        {"account_code": "5000", "debit": subtotal, "credit": 0.0, "memo": "Purchase expense"},
-        {"account_code": "2100", "debit": vat, "credit": 0.0, "memo": "VAT payable offset"},
+        {"account_code": "1200", "debit": subtotal, "credit": 0.0, "memo": "Inventory receipt"},
+        {"account_code": "2100", "debit": vat, "credit": 0.0, "memo": "VAT receivable"},
         {"account_code": "2000", "debit": 0.0, "credit": total, "memo": f"AP {vendor}"},
+    ]
+    append_journal_entry(date=date, ref=ref, memo=memo, lines=lines)
+
+
+def post_delivery_to_gl(delivery: Dict):
+    """Post a delivery note to GL: DR COGS, CR Inventory using recorded stock moves."""
+    # Ensure necessary accounts exist
+    ensure_account("1200", "Inventory", "asset")
+    ensure_account("5000", "Cost of Goods Sold", "expense")
+
+    ref = f"DEL-{delivery.get('id')}"
+    date = delivery.get("date") or datetime.utcnow().date().isoformat()
+    customer = delivery.get("customer")
+    memo = f"Delivery {delivery.get('id')} to {customer}"
+
+    # Sum COGS from recorded 'out' moves for this delivery
+    moves = _load_stock_moves()
+    cogs_total = 0.0
+    for m in moves:
+        try:
+            if m.get("ref") == ref and (m.get("type") or "") == "out":
+                qty = float(m.get("quantity", 0) or 0)
+                unit_cost = float(m.get("unit_cost", 0) or 0)
+                cogs_total += qty * unit_cost
+        except Exception:
+            continue
+    cogs_total = round(cogs_total, 2)
+    if cogs_total <= 0:
+        # Nothing to post
+        return
+
+    lines = [
+        {"account_code": "5000", "debit": cogs_total, "credit": 0.0, "memo": "COGS from delivery"},
+        {"account_code": "1200", "debit": 0.0, "credit": cogs_total, "memo": "Inventory reduction"},
     ]
     append_journal_entry(date=date, ref=ref, memo=memo, lines=lines)
 
@@ -361,6 +509,168 @@ def journals_create(
     ]
     append_journal_entry(date=date, ref=ref, memo=memo, lines=lines)
     return RedirectResponse(url="/accounting/journals", status_code=303)
+
+
+# --- Budgeting routes ---
+@router.get("/budget")
+def budget_list(request: Request):
+    budgets = load_budgets()
+    # Enrich with actuals and variance
+    for b in budgets:
+        period = b.get("period")
+        acct = b.get("account_code") or None
+        actual = actual_for_period_account(period, acct)
+        b["actual"] = actual
+        limit = float(b.get("limit", 0) or 0)
+        forecast = float(b.get("forecast", 0) or 0)
+        b["variance_vs_limit"] = round(limit - actual, 2)
+        b["variance_vs_forecast"] = round(forecast - actual, 2)
+    chart = load_chart()
+    return templates.TemplateResponse("finance_budget.html", {"request": request, "budgets": budgets, "chart": chart})
+
+
+@router.get("/budget/new")
+def budget_new(request: Request):
+    chart = load_chart()
+    # limit to income/expense accounts for targeting (optional)
+    accounts = [a for a in chart if a.get("type") in ("income", "expense")]
+    return templates.TemplateResponse("finance_budget_new.html", {"request": request, "accounts": accounts})
+
+
+@router.post("/budget")
+def budget_create(
+    request: Request,
+    name: str = Form(...),
+    period: str = Form(...),  # YYYY-MM
+    account_code: str = Form(""),
+    limit: str = Form("0"),
+    forecast: str = Form("0"),
+):
+    budgets = load_budgets()
+    row = {
+        "id": f"BUD-{len(budgets)+1:05d}",
+        "name": (name or "").strip(),
+        "period": (period or "").strip(),
+        "account_code": (account_code or "").strip() or None,
+        "limit": float(limit or 0),
+        "forecast": float(forecast or 0),
+        "created_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+    }
+    budgets.append(row)
+    save_budgets(budgets)
+    return RedirectResponse(url="/accounting/budget", status_code=303)
+
+
+# --- Tax Compliance routes ---
+@router.get("/tax")
+def tax_overview(request: Request, period: str = ""):
+    settings = load_tax_settings()
+    # default period: current YYYY-MM
+    if not period:
+        now = datetime.utcnow()
+        period = f"{now.year:04d}-{now.month:02d}"
+    # Sales tax collected
+    sales_tax = 0.0
+    try:
+        from .sales import load_invoices as sales_load_invoices  # type: ignore
+        invoices = sales_load_invoices()
+        for inv in invoices:
+            if period_matches(inv.date, period):
+                sales_tax += float(inv.subtotal or 0.0) * float(inv.tax_rate or 0.0)
+    except Exception:
+        pass
+    # Purchase tax credit
+    purchase_tax = 0.0
+    try:
+        from .purchases import load_bills as purchases_load_bills  # type: ignore
+        bills = purchases_load_bills()
+        for b in bills:
+            if period_matches(b.date, period):
+                purchase_tax += float(b.subtotal or 0.0) * float(b.tax_rate or 0.0)
+    except Exception:
+        pass
+    net_vat = round(sales_tax - purchase_tax, 2)
+    filings = load_tax_filings()
+    period_filings = [f for f in filings if f.get("period") == period]
+    return templates.TemplateResponse(
+        "finance_tax_overview.html",
+        {
+            "request": request,
+            "settings": settings,
+            "period": period,
+            "sales_tax": round(sales_tax, 2),
+            "purchase_tax": round(purchase_tax, 2),
+            "net_vat": net_vat,
+            "filings": period_filings,
+        },
+    )
+
+
+@router.get("/tax/settings")
+def tax_settings_page(request: Request):
+    settings = load_tax_settings()
+    countries = [
+        {"code": "IN", "name": "India", "taxes": ["GST", "TDS"]},
+        {"code": "GB", "name": "United Kingdom", "taxes": ["VAT"]},
+        {"code": "US", "name": "United States", "taxes": ["Sales Tax"]},
+        {"code": "SA", "name": "Saudi Arabia", "taxes": ["VAT"]},
+        {"code": "AE", "name": "United Arab Emirates", "taxes": ["VAT"]},
+    ]
+    return templates.TemplateResponse("finance_tax_settings.html", {"request": request, "settings": settings, "countries": countries})
+
+
+@router.post("/tax/settings")
+def tax_settings_update(
+    request: Request,
+    country_code: str = Form(""),
+    gst_rate: str = Form(""),
+    vat_rate: str = Form(""),
+    gstin: str = Form(""),
+    vat_number: str = Form(""),
+    tds_tan: str = Form(""),
+):
+    s = load_tax_settings()
+    s["country_code"] = (country_code or "").upper()
+    s["gst_rate"] = float(gstin and (gst_rate or 0) or (gst_rate or 0) or 0) if (gst_rate or "").strip() != "" else None
+    s["vat_rate"] = float((vat_rate or 0) or 0) if (vat_rate or "").strip() != "" else None
+    s["gstin"] = (gstin or "").strip()
+    s["vat_number"] = (vat_number or "").strip()
+    s["tds_tan"] = (tds_tan or "").strip()
+    # TDS rates can be edited separately (not in this simple form)
+    save_tax_settings(s)
+    return RedirectResponse(url="/accounting/tax/settings", status_code=303)
+
+
+@router.get("/tax/filings")
+def tax_filings_list(request: Request):
+    filings = load_tax_filings()
+    return templates.TemplateResponse("finance_tax_filings.html", {"request": request, "filings": filings})
+
+
+@router.get("/tax/filings/new")
+def tax_filings_new(request: Request):
+    return templates.TemplateResponse("finance_tax_filing_new.html", {"request": request})
+
+
+@router.post("/tax/filings")
+def tax_filings_create(
+    request: Request,
+    ftype: str = Form(...),  # gst, vat, tds
+    period: str = Form(...),
+    ref: str = Form(""),
+    status: str = Form("draft"),  # draft, submitted, accepted, rejected
+):
+    rows = load_tax_filings()
+    rows.append({
+        "id": f"TAX-{len(rows)+1:05d}",
+        "type": (ftype or "").lower(),
+        "period": (period or "").strip(),
+        "ref": (ref or "").strip(),
+        "status": (status or "").strip(),
+        "created_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+    })
+    save_tax_filings(rows)
+    return RedirectResponse(url="/accounting/tax/filings", status_code=303)
 
 
 # --- GL Account edit/delete helpers and routes ---

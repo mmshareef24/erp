@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Slitting Plan {{ plan.id }} • Print</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <style>
+      body { padding: 24px; }
+      .print-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border: 1px solid #ddd; padding: 6px; }
+    </style>
+  </head>
+  <body>
+    <div class="print-header">
+      <div>
+        <h1>Slitting Plan</h1>
+        <div>ID: {{ plan.id }}</div>
+        <div>Created: {{ plan.created_at }}</div>
+      </div>
+      <div>
+        <img src="/static/logo.svg" alt="Matrix ERP" style="height:40px;" />
+      </div>
+    </div>
+    <div class="grid">
+      <div>
+        <h3>Input Coil</h3>
+        <ul>
+          <li>ID: {{ plan.coil.id or '-' }}</li>
+          <li>Width: {{ plan.coil.width_mm }} mm</li>
+          <li>Thickness: {{ plan.coil.thickness_mm }} mm</li>
+          <li>Material: {{ plan.coil.material or '-' }}</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Parameters</h3>
+        <ul>
+          <li>Left Trim: {{ plan.params.left_trim_mm }} mm</li>
+          <li>Right Trim: {{ plan.params.right_trim_mm }} mm</li>
+          <li>Kerf: {{ plan.params.kerf_mm }} mm</li>
+          <li>Mode: {{ plan.params.mode }}</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Summary</h3>
+        <ul>
+          <li>Strips: {{ plan.computed.strip_count }}</li>
+          {% if plan.computed.strip_width %}
+          <li>Strip Width: {{ plan.computed.strip_width }} mm</li>
+          {% else %}
+          <li>Strip Widths: {{ plan.computed.strip_widths | join(', ') }} mm</li>
+          {% endif %}
+          <li>Width Breakdown: Base {{ plan.computed.base_width_mm }} − Left {{ plan.params.left_trim_mm }} − Right {{ plan.params.right_trim_mm }} − Kerf Total {{ plan.computed.kerf_total_mm }} = {{ plan.computed.effective_width }} mm</li>
+          <li>Effective Usable Width: {{ plan.computed.effective_width }} mm</li>
+          <li>Leftover Margin: {{ plan.computed.margin_mm }} mm</li>
+          <li>Used Width: {{ plan.computed.used_width }} mm</li>
+          <li>Scrap Width: {{ plan.computed.scrap_width }} mm</li>
+          <li>Yield: {{ plan.computed.yield_pct }} %</li>
+        </ul>
+      </div>
+    </div>
+    <h3>Knife Layout</h3>
+    <table>
+      <thead><tr><th>#</th><th>Offset (mm)</th></tr></thead>
+      <tbody>
+        {% for off in plan.computed.knife_offsets %}
+        <tr><td>{{ loop.index }}</td><td>{{ off }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if plan.params.mode == 'custom' and plan.computed.strip_deviations and plan.computed.strip_deviations|length > 0 %}
+    <h3>Scaling Deviations</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Requested (mm)</th>
+          <th>Final (mm)</th>
+          <th>Δ (mm)</th>
+          <th>Δ (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in plan.computed.strip_deviations %}
+        <tr>
+          <td>{{ d.index }}</td>
+          <td>{{ d.requested_mm }}</td>
+          <td>{{ d.final_mm }}</td>
+          <td>{{ d.delta_mm }}</td>
+          <td>{{ d.delta_pct }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </body>
+</html>

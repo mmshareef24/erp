@@ -16,8 +16,8 @@
       <div class="layout-with-sidebar">
         <aside class="sidebar">
           <nav class="submodule-nav">
-            <a href="/purchases/orders">Orders</a>
-            <a class="active" href="/purchases/bills">Bills</a>
+            <a href="/purchases/orders">Orders {% if open_po_count > 0 %}<span class="nav-badge">{{ open_po_count }}</span>{% endif %}</a>
+            <a class="active" href="/purchases/bills">Bills {% if unpaid_bills_count > 0 %}<span class="nav-badge">{{ unpaid_bills_count }}</span>{% endif %}</a>
           </nav>
         </aside>
         <section>

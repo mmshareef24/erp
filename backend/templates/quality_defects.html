@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quality • Defect Management</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/quality">Quality</a> / Defects</nav>
+    </header>
+
+    <main class="content">
+      <div class="layout-with-sidebar">
+        <aside class="sidebar">
+          <nav class="submodule-nav">
+            <a href="/quality/inspections">Inspections</a>
+            <a class="active" href="/quality/defects">Defects</a>
+            <a href="/quality/reports">Test Reports</a>
+            <a href="/quality/compliance">Compliance Docs</a>
+          </nav>
+        </aside>
+        <section>
+          <div class="actions">
+            <a class="btn btn-primary" href="/quality/defects/new">Log Defect</a>
+            <form method="get" action="/quality/defects" class="form-inline" style="display:inline-flex; gap:0.5rem;">
+              <label>Status</label>
+              <select name="status">
+                <option value="" {% if not selected_status %}selected{% endif %}>All</option>
+                <option value="open" {% if selected_status=='open' %}selected{% endif %}>Open</option>
+                <option value="closed" {% if selected_status=='closed' %}selected{% endif %}>Closed</option>
+              </select>
+              <button class="btn" type="submit">Filter</button>
+            </form>
+          </div>
+
+          {% set msg = request.query_params.get('msg') %}
+          {% set undo = request.query_params.get('undo') %}
+          {% if msg %}
+          <div class="banner" style="margin-bottom:0.75rem; padding:0.5rem 0.75rem; background:#fff7e6; border:1px solid #ffe58f; border-radius:6px; display:flex; align-items:center; gap:0.5rem;">
+            <span>{{ msg }}</span>
+            {% if undo %}
+            <form method="post" action="{{ undo }}" style="display:inline">
+              <button class="btn btn-small" type="submit">Undo</button>
+            </form>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          <div class="card">
+            <h2>Non-Compliance Records</h2>
+            <div class="muted" style="margin-bottom: 0.5rem;">
+              {% if request.query_params.get('show_deleted') %}
+                <a href="{{ request.url.path }}">Hide deleted</a>
+              {% else %}
+                <a href="{{ request.url.path }}?show_deleted=1">Show deleted</a>
+              {% endif %}
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Reference</th>
+                  <th>Stage</th>
+                  <th>Category</th>
+                  <th>Severity</th>
+                  <th>Status</th>
+                  <th>NC Code</th>
+                  <th>Description</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in rows %}
+                <tr>
+                  <td>{{ r.date[:10] }}</td>
+                  <td>{{ r.reference }}</td>
+                  <td>{{ r.stage }}</td>
+                  <td>{{ r.category }}</td>
+                  <td>{{ r.severity }}</td>
+                  <td><span class="badge">{{ r.status }}</span></td>
+                  <td>{{ r.nc_code }}</td>
+                  <td>{{ r.description }}</td>
+                  <td>
+                    <a class="btn btn-small" href="/quality/defects/{{ r.id }}/edit">Edit</a>
+                    <form method="post" action="/quality/defects/{{ r.id }}/delete" style="display:inline" class="confirm-delete" data-message="Delete this defect record?">
+                      <button class="btn btn-small btn-danger" type="submit">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="9" class="muted">No defect records.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </body>
+  <div id="confirmModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); align-items:center; justify-content:center;">
+    <div class="modal-card" style="background:#fff; padding:1rem; border-radius:8px; width:320px; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+      <h3 style="margin-top:0">Confirm Delete</h3>
+      <p id="confirmMessage" class="muted" style="margin:0.5rem 0 1rem 0">Are you sure?</p>
+      <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
+        <button id="cancelDelete" class="btn">Cancel</button>
+        <button id="confirmDelete" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function(){
+      const modal = document.getElementById('confirmModal');
+      const msgEl = document.getElementById('confirmMessage');
+      const btnCancel = document.getElementById('cancelDelete');
+      const btnConfirm = document.getElementById('confirmDelete');
+      let pendingForm = null;
+
+      function show(message){
+        msgEl.textContent = message || 'Are you sure?';
+        modal.style.display = 'flex';
+      }
+      function hide(){ modal.style.display = 'none'; }
+
+      document.querySelectorAll('form.confirm-delete').forEach(f => {
+        f.addEventListener('submit', function(e){
+          if (this.dataset.forceSubmit === 'true') return; // allow second submit
+          e.preventDefault();
+          pendingForm = this;
+          show(this.dataset.message || 'Delete this record?');
+        });
+      });
+      btnCancel.addEventListener('click', function(){ pendingForm = null; hide(); });
+      btnConfirm.addEventListener('click', function(){
+        if (pendingForm){
+          pendingForm.dataset.forceSubmit = 'true';
+          pendingForm.submit();
+        }
+        hide();
+      });
+      modal.addEventListener('click', function(e){ if (e.target === modal) hide(); });
+    })();
+  </script>
+</html>

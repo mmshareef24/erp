@@ -14,6 +14,14 @@
 
     <main class="content">
       <div class="actions">
+        <div style="display:inline-flex; gap:8px; align-items:center; margin-bottom:8px;">
+          <a class="btn btn-primary" href="/mrp/plan">Plan</a>
+          <a class="btn" href="/mrp/forecast">Forecast</a>
+          <a class="btn" href="/mrp/capacity">Capacity</a>
+          <a class="btn" href="/mrp/schedule">Schedule</a>
+          <a class="btn" href="/mrp/allocation">Allocation</a>
+          <a class="btn" href="/mrp/policies">Policies</a>
+        </div>
         <form action="/mrp/plan" method="get" style="display:inline-flex; gap:8px; align-items:center">
           <label>Warehouse
             <input type="text" name="warehouse" value="{{ selected_warehouse }}" placeholder="Main" />

@@ -117,8 +117,19 @@ async def purchases_home():
 @router.get("/orders", response_class=HTMLResponse)
 async def orders_list(request: Request):
     orders = load_orders()
+    bills = load_bills()
+    # Counts for sidebar badges
+    open_po_count = sum(1 for o in orders if o.status == "confirmed")
+    unpaid_bills_count = sum(1 for b in bills if b.status == "open")
     tpl = templates_env.get_template("purchases_orders.html")
-    return HTMLResponse(tpl.render(request=request, orders=orders))
+    return HTMLResponse(
+        tpl.render(
+            request=request,
+            orders=orders,
+            open_po_count=open_po_count,
+            unpaid_bills_count=unpaid_bills_count,
+        )
+    )
 
 
 @router.get("/orders/new", response_class=HTMLResponse)
@@ -204,8 +215,38 @@ async def order_to_bill(order_id: str, tax_rate: float = Form(0.0)):
 @router.get("/bills", response_class=HTMLResponse)
 async def bills_list(request: Request):
     bills = load_bills()
+    orders = load_orders()
+    # Counts for sidebar badges
+    open_po_count = sum(1 for o in orders if o.status == "confirmed")
+    unpaid_bills_count = sum(1 for b in bills if b.status == "open")
     tpl = templates_env.get_template("purchases_bills.html")
-    return HTMLResponse(tpl.render(request=request, bills=bills))
+    return HTMLResponse(
+        tpl.render(
+            request=request,
+            bills=bills,
+            open_po_count=open_po_count,
+            unpaid_bills_count=unpaid_bills_count,
+        )
+    )
+
+
+@router.get("/payments", response_class=HTMLResponse)
+async def payments_list(request: Request):
+    payments = load_payments()
+    # Counts for sidebar badges (reuse Purchases counts for consistency)
+    orders = load_orders()
+    bills = load_bills()
+    open_po_count = sum(1 for o in orders if o.status == "confirmed")
+    unpaid_bills_count = sum(1 for b in bills if b.status == "open")
+    tpl = templates_env.get_template("purchases_payments.html")
+    return HTMLResponse(
+        tpl.render(
+            request=request,
+            payments=payments,
+            open_po_count=open_po_count,
+            unpaid_bills_count=unpaid_bills_count,
+        )
+    )
 
 
 @router.get("/bills/{bill_id}", response_class=HTMLResponse)

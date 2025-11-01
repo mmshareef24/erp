@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MRP • Schedule</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/mrp">MRP</a> / Schedule</nav>
+    </header>
+
+    <main class="content">
+      <div class="actions" style="display:flex; gap:8px; align-items:center;">
+        <a class="btn" href="/mrp/plan">Plan</a>
+        <a class="btn" href="/mrp/forecast">Forecast</a>
+        <a class="btn" href="/mrp/capacity">Capacity</a>
+        <a class="btn btn-primary" href="/mrp/schedule">Schedule</a>
+        <a class="btn" href="/mrp/allocation">Allocation</a>
+        <span class="divider"></span>
+        <form action="/mrp/schedule" method="get" style="display:inline-flex; gap:8px; align-items:center;">
+          <label>View
+            <select name="view">
+              <option value="daily" {% if view=='daily' %}selected{% endif %}>Daily</option>
+              <option value="weekly" {% if view=='weekly' %}selected{% endif %}>Weekly</option>
+              <option value="monthly" {% if view=='monthly' %}selected{% endif %}>Monthly</option>
+            </select>
+          </label>
+          <button class="btn" type="submit">Change</button>
+        </form>
+        <form action="/mrp/schedule/auto" method="post" style="display:inline-flex; gap:8px;">
+          <button class="btn" type="submit">Auto-Schedule Open WOs</button>
+        </form>
+      </div>
+
+      <section>
+        <h3>Load by Date</h3>
+        <table class="table">
+          <thead>
+            <tr><th>Date</th><th>WO Count</th><th>Total Minutes</th></tr>
+          </thead>
+          <tbody>
+            {% for r in rows %}
+              <tr><td>{{ r.date }}</td><td>{{ r.wo_count }}</td><td>{{ r.total_minutes }}</td></tr>
+            {% else %}
+              <tr><td colspan="3" class="muted">No open work orders.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h3>Open Work Orders</h3>
+        <table class="table">
+          <thead>
+            <tr><th>ID</th><th>Product</th><th>Quantity</th><th>Status</th><th>Planned Start</th></tr>
+          </thead>
+          <tbody>
+            {% for w in wos %}
+              {% if w.status in ['draft','in_progress'] %}
+                <tr>
+                  <td>{{ w.id }}</td>
+                  <td>{{ w.product }}</td>
+                  <td>{{ w.quantity }}</td>
+                  <td>{{ w.status }}</td>
+                  <td>{{ w.planned_start or '-' }}</td>
+                </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+    </main>
+
+    <footer class="footer">MRP • Schedule</footer>
+  </body>
+</html>

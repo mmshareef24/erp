@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quality • {% if item %}Edit Inspection{% else %}New Inspection{% endif %}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/quality">Quality</a> / <a href="/quality/inspections">Inspections</a> / {% if item %}Edit{% else %}New{% endif %}</nav>
+    </header>
+
+    <main class="content">
+      <div class="card">
+        <h2>{% if item %}Edit QC Inspection{% else %}New QC Inspection{% endif %}</h2>
+        <form method="post" action="{% if item %}/quality/inspections/{{ item.id }}{% else %}/quality/inspections{% endif %}" class="form" id="inspectionForm">
+          <div class="form-row">
+            <label>Reference</label>
+            <input type="text" name="reference" placeholder="Batch/W.O./Product" required value="{{ item.reference if item }}" />
+          </div>
+          <div class="form-row">
+            <label>Stage</label>
+            <select name="stage" required>
+              <option value="raw" {% if item and item.stage=='raw' %}selected{% endif %}>Raw</option>
+              <option value="in_process" {% if item and item.stage=='in_process' %}selected{% endif %}>In-Process</option>
+              <option value="final" {% if item and item.stage=='final' %}selected{% endif %}>Final</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Inspector</label>
+            <input type="text" name="inspector" placeholder="Inspector name" value="{{ item.inspector if item }}" />
+          </div>
+          <div class="form-row">
+            <label>Criteria JSON</label>
+            <textarea name="criteria" id="criteria" rows="6" placeholder='[{"parameter":"Thickness","method":"Micrometer","standard":"0.50±0.02","result":"0.51","pass":true}]'>{{ criteria_json if item }}</textarea>
+            <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+              <button type="button" class="btn" id="formatJson">Format JSON</button>
+              <span id="jsonStatus" class="muted" style="align-self:center"></span>
+            </div>
+            <p class="muted">Provide an array of criteria with parameter, method, standard, result, pass.</p>
+          </div>
+          <div class="form-row">
+            <label>Status</label>
+            <select name="status">
+              <option value="pending" {% if item and item.status=='pending' %}selected{% endif %}>Pending</option>
+              <option value="pass" {% if item and item.status=='pass' %}selected{% endif %}>Pass</option>
+              <option value="fail" {% if item and item.status=='fail' %}selected{% endif %}>Fail</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Notes</label>
+            <textarea name="notes" rows="3">{{ item.notes if item }}</textarea>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Save</button>
+            <a class="btn" href="/quality/inspections">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </body>
+  <script>
+    (function(){
+      const form = document.getElementById('inspectionForm');
+      const ta = document.getElementById('criteria');
+      const fmtBtn = document.getElementById('formatJson');
+      const statusEl = document.getElementById('jsonStatus');
+      function validate(jsonText){
+        try {
+          const obj = jsonText ? JSON.parse(jsonText) : [];
+          statusEl.textContent = 'Valid JSON';
+          statusEl.style.color = 'green';
+          return obj;
+        } catch (e){
+          statusEl.textContent = 'Invalid JSON: ' + e.message;
+          statusEl.style.color = 'red';
+          return null;
+        }
+      }
+      ta.addEventListener('input', function(){ validate(ta.value); });
+      fmtBtn.addEventListener('click', function(){
+        const obj = validate(ta.value);
+        if (obj !== null){ ta.value = JSON.stringify(obj, null, 2); }
+      });
+      form.addEventListener('submit', function(e){
+        const obj = validate(ta.value);
+        if (obj === null){ e.preventDefault(); alert('Please fix criteria JSON before saving.'); }
+      });
+      // initial validation
+      validate(ta.value);
+    })();
+  </script>
+</html>

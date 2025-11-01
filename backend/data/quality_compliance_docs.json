@@ -1,0 +1,13 @@
+[
+  {
+    "id": "QA-SAMPLE-CMP-001",
+    "doc_type": "ISO",
+    "title": "ISO 9001:2015 Quality Management",
+    "number": "ISO-9001-2015",
+    "issue_date": "2025-01-01",
+    "expiry_date": "2026-01-01",
+    "owner": "Compliance Team",
+    "status": "active",
+    "created": "2025-11-01T00:15:00Z"
+  }
+]

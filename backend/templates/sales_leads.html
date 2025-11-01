@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mail • Leads</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/mail">Mail</a> / Leads</nav>
+    </header>
+
+    <main class="content">
+      <div class="layout-with-sidebar">
+        <aside class="sidebar">
+          <nav class="submodule-nav">
+            <a href="/mail/orders">Orders {% if orders_open_count > 0 %}<span class="nav-badge">{{ orders_open_count }}</span>{% endif %}</a>
+            <a href="/mail/quotes">Quotes</a>
+            <a href="/mail/invoices">Invoices {% if invoices_open_count > 0 %}<span class="nav-badge">{{ invoices_open_count }}</span>{% endif %}</a>
+            <a class="active" href="/mail/leads">Leads {% if lead_count > 0 %}<span class="nav-badge">{{ lead_count }}</span>{% endif %}</a>
+          </nav>
+        </aside>
+        <section>
+          <div class="toolbar">
+            <a class="btn btn-primary" href="/mail/quotes/new">New Quote</a>
+            <div class="filters" style="display:inline-block; margin-left: 12px;">
+              <span class="muted" style="margin-right:6px;">Filter:</span>
+              <a class="btn {% if request.query_params.get('status') in [None, '', 'all'] %}active{% endif %}" href="/mail/leads?status=all">All</a>
+              <a class="btn {% if request.query_params.get('status') == 'draft' %}active{% endif %}" href="/mail/leads?status=draft">Draft</a>
+              <a class="btn {% if request.query_params.get('status') == 'sent' %}active{% endif %}" href="/mail/leads?status=sent">Sent</a>
+            </div>
+          </div>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for q in leads %}
+              <tr>
+                <td><a href="/mail/quotes/{{ q.id }}">{{ q.id[:8] }}</a></td>
+                <td>{{ q.customer }}</td>
+                <td>{{ q.date }}</td>
+                <td>{{ q.status }}</td>
+                <td>${{ '%.2f'|format(q.total) }}</td>
+                <td>
+                  <div class="actions">
+                    <a class="btn" href="/mail/quotes/{{ q.id }}">View Quote</a>
+                    <form action="/mail/quotes/{{ q.id }}/confirm" method="post" style="display:inline">
+                      <button class="btn btn-primary" type="submit">Convert to Order</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="6" class="muted">No leads yet. Create a Quote to start.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">Mail • Leads</footer>
+  </body>
+  </html>

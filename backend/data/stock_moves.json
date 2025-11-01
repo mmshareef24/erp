@@ -1,1 +1,134 @@
-[]
+[
+  {
+    "id": "916633e5-7491-4e0f-acdd-566f25e1b8d9",
+    "date": "2025-11-01T07:16:12Z",
+    "product": "Consulting Service",
+    "quantity": 2.0,
+    "unit_cost": 0.0,
+    "type": "out",
+    "ref": "DEL-b7011e06-7192-4e09-98fa-a48b16065084",
+    "memo": "",
+    "warehouse": "Main",
+    "location": ""
+  },
+  {
+    "id": "a3f5e5f2-2c11-4f1a-9a57-111111111111",
+    "date": "2025-11-01T12:30:00Z",
+    "product": "Widget A",
+    "quantity": 10.0,
+    "unit_cost": 5.0,
+    "type": "in",
+    "ref": "SEED-REC-001",
+    "memo": "Initial stock receipt",
+    "warehouse": "Main",
+    "location": "A1"
+  },
+  {
+    "id": "b4c6d7e8-3d22-4b2b-8c68-222222222222",
+    "date": "2025-11-01T12:35:00Z",
+    "product": "Widget A",
+    "quantity": 2.0,
+    "unit_cost": 5.0,
+    "type": "out",
+    "ref": "SEED-ISS-001",
+    "memo": "Adjustment for shrinkage",
+    "warehouse": "Main",
+    "location": "A1"
+  },
+  {
+    "id": "c5d7e9f0-4e33-4c3c-9d79-333333333333",
+    "date": "2025-11-01T12:40:00Z",
+    "product": "Widget A",
+    "quantity": 3.0,
+    "unit_cost": 5.0,
+    "type": "out",
+    "ref": "XFER-9f2a1b88-5d6e-4fb8-8f8b-aaaaaaaaaaaa",
+    "memo": "Transfer to Secondary",
+    "warehouse": "Main",
+    "location": "A1"
+  },
+  {
+    "id": "d6e8f0a1-5f44-4d4d-af8a-444444444444",
+    "date": "2025-11-01T12:40:30Z",
+    "product": "Widget A",
+    "quantity": 3.0,
+    "unit_cost": 5.0,
+    "type": "in",
+    "ref": "XFER-9f2a1b88-5d6e-4fb8-8f8b-aaaaaaaaaaaa",
+    "memo": "Transfer from Main",
+    "warehouse": "Secondary",
+    "location": "B1"
+  },
+  {
+    "id": "e7f901b2-6a55-4f77-b2aa-555555555556",
+    "date": "2025-11-01T12:46:10Z",
+    "product": "Widget A",
+    "quantity": 3.0,
+    "unit_cost": 5.0,
+    "type": "out",
+    "ref": "DEL-9e5f0c12-9a1d-4c4d-9e29-555555555555",
+    "memo": "Sales delivery to Acme",
+    "warehouse": "Main",
+    "location": "A1"
+  },
+  {
+    "id": "c187b797-12d6-4b74-b791-5cbb0a21d282",
+    "date": "2025-11-01T07:53:22Z",
+    "product": "Widget A",
+    "quantity": 10.0,
+    "unit_cost": 5.0,
+    "type": "in",
+    "ref": "MANUAL",
+    "memo": "Initial stock",
+    "warehouse": "Main",
+    "location": ""
+  },
+  {
+    "id": "cb43e36d-56c8-4d0c-8645-2fe173a4d7d3",
+    "date": "2025-11-01T07:54:27Z",
+    "product": "Widget A",
+    "quantity": 3.0,
+    "unit_cost": 5.0,
+    "type": "out",
+    "ref": "DEL-ab037ccb-430f-40c1-90ed-65a72053f71f",
+    "memo": "",
+    "warehouse": "Main",
+    "location": ""
+  },
+  {
+    "id": "8c815649-e9c1-47c4-ba69-a493eb7933d7",
+    "date": "2025-11-01T08:01:58Z",
+    "product": "Widget A Component",
+    "quantity": 10.0,
+    "unit_cost": 0.0,
+    "type": "out",
+    "ref": "WO-cd8e0ea8-9e1b-45eb-a403-7afdcafaf9d0",
+    "memo": "",
+    "warehouse": "Main",
+    "location": ""
+  },
+  {
+    "id": "4df2b13b-de47-416d-a3b3-07ed3642686b",
+    "date": "2025-11-01T08:01:58Z",
+    "product": "Screw",
+    "quantity": 20.0,
+    "unit_cost": 0.0,
+    "type": "out",
+    "ref": "WO-cd8e0ea8-9e1b-45eb-a403-7afdcafaf9d0",
+    "memo": "",
+    "warehouse": "Main",
+    "location": ""
+  },
+  {
+    "id": "2fb5a66f-ed97-49df-96a5-6252dae8e332",
+    "date": "2025-11-01T08:02:07Z",
+    "product": "Widget A",
+    "quantity": 5.0,
+    "unit_cost": 3.0,
+    "type": "in",
+    "ref": "WO-cd8e0ea8-9e1b-45eb-a403-7afdcafaf9d0",
+    "memo": "",
+    "warehouse": "Main",
+    "location": ""
+  }
+]

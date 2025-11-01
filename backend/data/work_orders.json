@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "id": "cd8e0ea8-9e1b-45eb-a403-7afdcafaf9d0",
+    "date": "2025-11-01T07:59:29Z",
+    "product": "Widget A",
+    "quantity": 5.0,
+    "warehouse": "Main",
+    "location": "",
+    "status": "completed",
+    "labor_cost": 0.0,
+    "overhead_cost": 0.0,
+    "consumed": [
+      {
+        "product": "Widget A Component",
+        "quantity": 10.0,
+        "unit_cost": 0.0
+      },
+      {
+        "product": "Screw",
+        "quantity": 20.0,
+        "unit_cost": 0.0
+      }
+    ],
+    "produced": [
+      {
+        "product": "Widget A",
+        "quantity": 5.0,
+        "unit_cost": 3.0
+      }
+    ],
+    "operations": [
+      {
+        "name": "Assembly",
+        "minutes": 30.0,
+        "rate": 0.5
+      }
+    ],
+    "issue_method": "manual",
+    "reserved": [],
+    "scrap": []
+  }
+]

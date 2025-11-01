@@ -1,0 +1,66 @@
+{% extends "app.html" %}
+{% block title %}Slitting • New Plan{% endblock %}
+{% block content %}
+<div class="layout-with-sidebar">
+  <aside class="sidebar">
+    <nav class="submodule-nav">
+      <a href="/slitting/new" class="active">New Plan</a>
+      <a href="/slitting/plans">Saved Plans</a>
+    </nav>
+  </aside>
+  <section>
+    <h2>Create Slitting Plan</h2>
+    <form method="post" action="/slitting/plan" class="form">
+      <fieldset>
+        <legend>Input Coil</legend>
+        <div class="form-row">
+          <label>Coil ID <input type="text" name="coil_id" placeholder="COIL-SS-0001" /></label>
+          <label>Width (mm) <input type="number" step="0.01" name="coil_width_mm" required /></label>
+          <label>Thickness (mm) <input type="number" step="0.01" name="coil_thickness_mm" /></label>
+          <label>Material <input type="text" name="material" placeholder="SS304" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Machine & Losses</legend>
+        <div class="form-row">
+          <label>Left Trim (mm) <input type="number" step="0.01" name="left_trim_mm" value="2.0" /></label>
+          <label>Right Trim (mm) <input type="number" step="0.01" name="right_trim_mm" value="2.0" /></label>
+          <label>Kerf (mm) <input type="number" step="0.01" name="kerf_mm" value="0.2" /></label>
+          <label>Arbor Usable Width (mm) <input type="number" step="0.01" name="usable_width_mm" value="0" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Machine Constraints</legend>
+        <div class="form-row">
+          <label>Max Knives <input type="number" name="max_knives" value="20" /></label>
+          <label>Min Strip Width (mm) <input type="number" step="0.01" name="min_width_mm" value="0" /></label>
+          <label>Max Strip Width (mm) <input type="number" step="0.01" name="max_width_mm" value="0" /></label>
+          <label>Tolerance (mm) <input type="number" step="0.01" name="tolerance_mm" value="0.5" /></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Requirements</legend>
+        <div class="form-row">
+          <label>Mode
+            <select name="mode">
+              <option value="uniform" selected>Uniform Strips</option>
+              <option value="custom">Custom Widths</option>
+            </select>
+          </label>
+          <label>Strip Count (uniform)
+            <input type="number" name="strip_count" value="10" />
+          </label>
+          <label>Custom Widths (comma mm)
+            <input type="text" name="custom_widths" placeholder="50, 75, 100" />
+          </label>
+          <label><input type="checkbox" name="strict_targets" value="true" /> Strict Targets (no scaling)</label>
+        </div>
+      </fieldset>
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Compute Plan</button>
+        <a class="btn" href="/slitting/plans">View Saved Plans</a>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

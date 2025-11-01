@@ -1,0 +1,30 @@
+{% extends "app.html" %}
+{% block title %}Human Resources • New Job{% endblock %}
+{% block content %}
+<section style="padding: 1rem;">
+  <h2><i class="fa-solid fa-briefcase"></i> Create Job (Stub)</h2>
+  <p class="muted">This is a placeholder for job creation and posting.</p>
+  <section class="card">
+    <div class="card-header">Job Details</div>
+    <div class="card-body">
+      <form class="form" action="/hr/jobs" method="post">
+        <div class="form-grid">
+          <label>Title
+            <input type="text" name="title" required placeholder="e.g. Senior Accountant" />
+          </label>
+          <label>Department
+            <input type="text" name="department" placeholder="e.g. Finance" />
+          </label>
+          <label>Location
+            <input type="text" name="location" placeholder="e.g. Riyadh" />
+          </label>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">Create</button>
+          <a class="btn" href="/hr/recruitment">Back to Recruitment</a>
+        </div>
+      </form>
+    </div>
+  </section>
+</section>
+{% endblock %}

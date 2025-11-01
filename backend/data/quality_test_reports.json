@@ -1,0 +1,10 @@
+[
+  {
+    "id": "QA-SAMPLE-REP-001",
+    "reference": "QA-TEST-REP-001",
+    "type": "automated",
+    "results": "{\"thickness\": 0.92, \"flatness\": 0.98}",
+    "summary": "Automated QC run shows thickness within spec, flatness acceptable.",
+    "date": "2025-11-01T00:10:00Z"
+  }
+]

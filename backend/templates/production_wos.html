@@ -17,27 +17,64 @@
         <a class="btn" href="/production/boms">BOMs</a>
         <a class="btn btn-primary" href="/production/work_orders/new">New Work Order</a>
       </div>
+      <form action="/production/work_orders/batch" method="post">
+        <div class="card">
+          <h3>Batch Actions</h3>
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
+            <label>Action
+              <select name="action" required>
+                <option value="start">Start</option>
+                <option value="issue">Issue Materials</option>
+                <option value="complete">Complete</option>
+              </select>
+            </label>
+            <label>Qty (for Issue/Complete)
+              <input type="number" name="qty" step="0.01" min="0" value="0" />
+            </label>
+            <button class="btn" type="submit">Run Batch</button>
+            <span class="muted">Select WOs below and click Run.</span>
+          </div>
+        </div>
+      <div class="actions">
+        <form onsubmit="const w=this.querySelector('[name=wo_id]').value; const q=this.querySelector('[name=qty]').value || 1; window.location.href='/production/work_orders/'+w+'/labels?qty='+q+'&auto=1'; return false;" style="display:inline-flex; gap:8px; align-items:center">
+          <label>Work Order
+            <select name="wo_id" required>
+              {% for w in wos %}
+              <option value="{{ w.id }}">{{ w.id }} — {{ w.product }} ({{ w.status }})</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>Labels Qty
+            <input type="number" name="qty" min="1" step="1" value="1" />
+          </label>
+          <button class="btn" type="submit">Open Labels</button>
+        </form>
+      </div>
       <table class="table">
         <thead>
           <tr>
+            <th>Select</th>
             <th>Date</th>
             <th>Product</th>
             <th>Qty</th>
             <th>Warehouse</th>
             <th>Location</th>
             <th>Status</th>
+            <th>Labels</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
           {% for w in wos %}
           <tr>
+            <td><input type="checkbox" name="wo_ids" value="{{ w.id }}" /></td>
             <td>{{ w.date }}</td>
             <td>{{ w.product }}</td>
             <td>{{ w.quantity }}</td>
             <td>{{ w.warehouse }}</td>
             <td>{{ w.location }}</td>
             <td>{{ w.status }}</td>
+            <td><a class="btn" href="/production/work_orders/{{ w.id }}/labels?qty={{ (w.quantity|int) if w.quantity else 1 }}&auto=1">Labels</a></td>
             <td><a class="btn" href="/production/work_orders/{{ w.id }}">Open</a></td>
           </tr>
           {% else %}
@@ -45,6 +82,7 @@
           {% endfor %}
         </tbody>
       </table>
+      </form>
     </main>
 
     <footer class="footer">Production • Work Orders</footer>

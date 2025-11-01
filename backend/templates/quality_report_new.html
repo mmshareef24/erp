@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quality • {% if item %}Edit Test Report{% else %}New Test Report{% endif %}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Matrix ERP</div>
+      <nav class="breadcrumbs"><a href="/">Apps</a> / <a href="/app/quality">Quality</a> / <a href="/quality/reports">Test Reports</a> / {% if item %}Edit{% else %}New{% endif %}</nav>
+    </header>
+
+    <main class="content">
+      <div class="card">
+        <h2>{% if item %}Edit Test Report{% else %}New Test Report{% endif %}</h2>
+        <form method="post" action="{% if item %}/quality/reports/{{ item.id }}{% else %}/quality/reports{% endif %}" class="form">
+          <div class="form-row">
+            <label>Reference</label>
+            <input type="text" name="reference" placeholder="Batch/W.O./Product" value="{{ item.reference if item }}" />
+          </div>
+          <div class="form-row">
+            <label>Type</label>
+            <select name="type">
+              <option value="automated" {% if item and item.type=='automated' %}selected{% endif %}>Automated</option>
+              <option value="manual" {% if item and item.type=='manual' %}selected{% endif %}>Manual</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Summary</label>
+            <input type="text" name="summary" placeholder="Short summary" value="{{ item.summary if item }}" />
+          </div>
+          <div class="form-row">
+            <label>Results (JSON/text)</label>
+            <textarea name="results" rows="6" placeholder='{"thickness_avg":0.51,"tensile":430}'>{{ item.results if item }}</textarea>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Save</button>
+            <a class="btn" href="/quality/reports">Cancel</a>
+            {% if item %}
+            <a class="btn" href="/quality/reports/{{ item.id }}/mtc-print" target="_blank">Print MTC</a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </main>
+  </body>
+</html>

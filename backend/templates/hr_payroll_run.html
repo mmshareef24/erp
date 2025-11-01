@@ -1,0 +1,36 @@
+{% extends "app.html" %}
+{% block title %}Human Resources • Run Payroll{% endblock %}
+{% block content %}
+<section style="padding: 1rem;">
+  <h2><i class="fa-solid fa-money-bill"></i> Run Payroll (Stub)</h2>
+  <p class="muted">This is a placeholder for the payroll run wizard.</p>
+  <section class="card">
+    <div class="card-header">Cycle Details</div>
+    <div class="card-body">
+      <form class="form" action="/hr/payroll/run" method="post">
+        <div class="form-grid">
+          <label>Period
+            <input type="month" name="period" required />
+          </label>
+          <label>Include Bonuses
+            <select name="bonuses">
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+          <label>Include Deductions
+            <select name="deductions">
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">Run Payroll</button>
+          <a class="btn" href="/hr/payroll">Back to Payroll</a>
+        </div>
+      </form>
+    </div>
+  </section>
+</section>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "app.html" %}
+{% block title %}Slitting • Plan {{ plan.id }}{% endblock %}
+{% block content %}
+<div class="layout-with-sidebar">
+  <aside class="sidebar">
+    <nav class="submodule-nav">
+      <a href="/slitting/new">New Plan</a>
+      <a href="/slitting/plans" class="active">Saved Plans</a>
+    </nav>
+  </aside>
+  <section>
+    <h2>Slitting Plan {{ plan.id }}</h2>
+    {% if plan.computed.feasible %}
+    <div class="alert success">Plan is feasible under current constraints.</div>
+    {% else %}
+    <div class="alert danger">Plan is infeasible under current constraints.</div>
+    {% if plan.computed.errors and plan.computed.errors|length > 0 %}
+    <ul class="list">
+      {% for e in plan.computed.errors %}
+      <li>{{ e }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% endif %}
+    <div class="cards">
+      <div class="card">
+        <h3>Input Coil</h3>
+        <ul class="list">
+          <li><b>ID:</b> {{ plan.coil.id or '-' }}</li>
+          <li><b>Width:</b> {{ plan.coil.width_mm }} mm</li>
+          <li><b>Thickness:</b> {{ plan.coil.thickness_mm }} mm</li>
+          <li><b>Material:</b> {{ plan.coil.material or '-' }}</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Parameters</h3>
+        <ul class="list">
+          <li><b>Left Trim:</b> {{ plan.params.left_trim_mm }} mm</li>
+          <li><b>Right Trim:</b> {{ plan.params.right_trim_mm }} mm</li>
+          <li><b>Kerf:</b> {{ plan.params.kerf_mm }} mm</li>
+          <li><b>Mode:</b> {{ plan.params.mode }}</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Constraints</h3>
+        <ul class="list">
+          <li><b>Max Knives:</b> {{ plan.constraints.max_knives }}</li>
+          <li><b>Min Width:</b> {{ plan.constraints.min_width_mm }} mm</li>
+          <li><b>Max Width:</b> {{ plan.constraints.max_width_mm }} mm</li>
+          <li><b>Tolerance:</b> {{ plan.constraints.tolerance_mm }} mm</li>
+          <li><b>Arbor Usable Width:</b> {{ plan.constraints.usable_width_mm }} mm</li>
+          <li><b>Strict Targets:</b> {{ plan.constraints.strict_targets and 'Yes' or 'No' }}</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Summary</h3>
+        <ul class="list">
+          <li><b>Strips:</b> {{ plan.computed.strip_count }}</li>
+          {% if plan.computed.strip_width %}
+          <li><b>Strip Width:</b> {{ plan.computed.strip_width }} mm</li>
+          {% else %}
+          <li><b>Strip Widths:</b> {{ plan.computed.strip_widths | join(', ') }} mm</li>
+          {% endif %}
+          <li><b>Width Breakdown:</b> Base {{ plan.computed.base_width_mm }} − Left {{ plan.params.left_trim_mm }} − Right {{ plan.params.right_trim_mm }} − Kerf Total {{ plan.computed.kerf_total_mm }} = {{ plan.computed.effective_width }} mm</li>
+          <li><b>Effective Usable Width:</b> {{ plan.computed.effective_width }} mm</li>
+          <li><b>Leftover Margin:</b> {{ plan.computed.margin_mm }} mm</li>
+          <li><b>Used Width:</b> {{ plan.computed.used_width }} mm</li>
+          <li><b>Scrap Width:</b> {{ plan.computed.scrap_width }} mm</li>
+          <li><b>Yield:</b> {{ plan.computed.yield_pct }} %</li>
+        </ul>
+      </div>
+    </div>
+
+    {% if plan.params.mode == 'custom' and plan.computed.strip_deviations and plan.computed.strip_deviations|length > 0 %}
+    <h3>Scaling Deviations</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Requested (mm)</th>
+          <th>Final (mm)</th>
+          <th>Δ (mm)</th>
+          <th>Δ (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in plan.computed.strip_deviations %}
+        <tr>
+          <td>{{ d.index }}</td>
+          <td>{{ d.requested_mm }}</td>
+          <td>{{ d.final_mm }}</td>
+          <td>{{ d.delta_mm }}</td>
+          <td>{{ d.delta_pct }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    <h3>Knife Layout</h3>
+    <table class="table">
+      <thead><tr><th>#</th><th>Offset (mm)</th></tr></thead>
+      <tbody>
+        {% for off in plan.computed.knife_offsets %}
+        <tr><td>{{ loop.index }}</td><td>{{ off }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="actions">
+      {% if plan.computed.feasible %}
+      <a class="btn" href="/slitting/plan/{{ plan.id }}/print" target="_blank">Printable Sheet</a>
+      <a class="btn" href="/slitting/plan/{{ plan.id }}/json" target="_blank">JSON Output</a>
+      {% else %}
+      <span class="muted">Resolve constraints to enable Print/JSON.</span>
+      {% endif %}
+      <a class="btn" href="/slitting/new">Create Another</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

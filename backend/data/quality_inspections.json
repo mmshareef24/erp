@@ -1,0 +1,15 @@
+[
+  {
+    "id": "QA-SAMPLE-INS-001",
+    "reference": "QA-TEST-INS-001",
+    "stage": "raw",
+    "inspector": "QA Bot",
+    "date": "2025-11-01T00:00:00Z",
+    "criteria": [
+      {"name": "Thickness", "pass": true},
+      {"name": "Edges", "pass": false}
+    ],
+    "status": "pending",
+    "notes": "Seed sample inspection to verify listing."
+  }
+]
